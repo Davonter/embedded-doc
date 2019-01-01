@@ -1,0 +1,223 @@
+linux2.6.x的配置文件kconfig语法
+
+linux在2.6版本以后将配置文件由原来的config.in改为kconfig，对于kconfig的语法在/Documentation/kbuild/kconfig-language.txt中做了详细的说明，在这里给出kconfig-language.txt的中文版。
+介绍
+----
+
+在配置数据库的配置选项是以树的形式组织的：
+
+   +- Code maturity level options
+   | +- Prompt for development and/or incomplete code/drivers
+   +- General setup
+   | +- Networking support
+   | +- System V IPC
+   | +- BSD Process Accounting
+   | +- Sysctl support
+   +- Loadable module support
+   | +- Enable loadable module support
+   |     +- Set version information on all module symbols
+   |     +- Kernel module loader
+   +- ...
+
+每个选项都有其自己的依赖关系。这些依赖关系决定了选项是否是可见的。父选项可见，子选项才能可见。
+
+菜单选项
+--------
+
+大多数的选项都定义了一个配置选项，其它选项则有助于对它们进行组织。(原文：Most entries define
+a config option, all other entries help to organize them.)一个配置选项定义可以是下面
+的形式：
+
+config MODVERSIONS
+   bool "Set version information on all module symbols"
+   depends MODULES
+   help
+      Usually, modules have to be recompiled whenever you switch to a new
+      kernel. ...
+
+每行都是以关键字开始，并可以接多个参数。"config" 为定义了一新的配置选项。下面的几行定义了该配置
+选项的属性。属性可以是该配置选项的类型，输入提示(input prompt)，依赖关系，帮助信息和默认值。一
+配置选项可以用相同的名字定义多次，但每个定义只能有一个输入提示并且类型还不能冲突。
+
+菜单属性
+--------
+
+一菜单选项可以有多个属性。并不要求这些属性可以用在任何地方(见语法)。
+
+- 类型定义："bool"/"tristate"/"string"/"hex"/"int"
+每个配置选项都必须指定类型。有两个基本类型：tristate 和 string，其他类型都是基于这两个基本
+类型。类型定义可以用输入提示，所以下面的两个例子是等价的：
+
+   bool "Networking support"
+和
+   bool
+   prompt "Networking support"
+
+- 输入提示： "prompt" <prompt> ["if" <expr>]
+每个菜单选项最多只能有一个显示给用户的输入提示。可以用 "if" 来表示该提示的依赖关系，当然这是
+可选的。
+
+- 默认值："default" <expr> ["if" <expr>]
+一个配置选项可以有任意多个默认值。如果有多个默认值，那么只有第一个被定义的值是可用的。默认值并
+不是只限于应用在定义他们的菜单选项。这就意味着默认值可以定义在任何地方或被更早的定义覆盖。
+如果用户没有设置(通过上面的输入提示)，配置选项的值就是默认值。如果可以显示输入提示的话，就会把
+默认值显示给用户，并可以让用户进行修改。
+默认值的依赖关系可以用 "if" 添加。(可选项)
+
+- 依赖关系："depends on"/"requires" <expr>
+为一菜单选项定义依赖关系。如果定义了多个依赖关系，它们之间用 '&&' 间隔。依赖关系也可以应用到
+该菜单中所有的其它选项(同样接受一if表达式)，所以下面的两个例子是等价的：
+
+   bool "foo" if BAR
+   default y if BAR
+and
+   depends on BAR
+   bool "foo"
+   default y
+
+- 反向依赖关系："select" <symbol> ["if" <expr>]
+尽管普通的依赖关系可以降低一选项的上限，反向依赖能将这一限制降的更低。当前菜单选项的值是symbol
+的最小值。如果symbol被选择了多次，上限就是其中的最大值。
+反向依赖只能用在 boolean 或 tristate 选项上。
+
+- 数据范围："range" <symbol> <symbol> ["if" <expr>]
+为int和hex类型的选项设置可以接受输入值范围。用户只能输入大于等于第一个symbol，小于等于第二个
+symbol的值。
+
+- 帮助信息： "help" or "---help---"
+定义一帮助信息。帮助信息的结束就由缩进的水平决定的，这也就意味着信息是在第一个比帮助信息开始行
+的缩进小的行结束。
+"---help---" 和 "help" 在实现的作用上没有区别，"---help---" 有助于将文件中的配置逻辑与
+给开发人员的提示分开。
+
+
+菜单依赖关系
+------------
+
+依赖关系决定了菜单选项是否可见，也可以减少tristate的输入范围。tristate逻辑比boolean逻辑在表
+达式中用更多的状态(state)来表示模块的状态。依赖关系表达式的语法如下：
+
+<expr> ::= <symbol>                             (1)
+           <symbol> '=' <symbol>                (2)
+           <symbol> '!=' <symbol>               (3)
+           '(' <expr> ')'                       (4)
+           '!' <expr>                           (5)
+           <expr> '&&' <expr>                   (6)
+           <expr> '||' <expr>                   (7)
+
+表达式是以优先级的降序列出的。
+
+(1) 将symbol赋给表达式。boolean和tristate类型的symbol直接赋给表达式。所有其它类型的symbol
+    都赋 'n'。
+(2) 如果两个symbol相等，返回'y'，否则为'n'。
+(3) 如果两个symbol相等，返回'n'，否则为'y'。
+(4) 返回表达式的值。用于改变优先级。
+(5) 返回 (2-/expr/) 的结果。
+(6) 返回 min(/expr/,/expr/) 的结果。
+(7) 返回 max(/expr/,/expr/) 的结果。
+
+一个表达式的值可以是'n'，'m'或'y'(或者是计算的结果 0,1,2）。当表达式的值为'm'或'y'的时候，菜
+单项才是可见的。
+
+symbol有两种类型：不可变的和可变的。不可变的symbol是最普通的，由'config'语句定义，完全由数字
+、字母和下划线组成(alphanumeric characters or underscores)。
+不可变的symbol只是表达式的一部分。经常用单引号或双引号括起来。在引号中，可以使用任何字符，使用引
+号要用转义字符'\'。
+
+菜单结构
+--------
+
+菜单在树中的位置可由两种方法决定。第一种可以是这样：
+
+menu "Network device support"
+   depends NET
+
+config NETDEVICES
+   ...
+
+endmenu
+
+所有的在"menu" ... "endmenu" 之间都是"Network device support"的子菜单。所有的子菜单选项
+都继承了父菜单的依赖关系，比如，"NET"的依赖关系就被加到了配置选项NETDEVICES的依赖列表中。
+
+还有就是通过分析依赖关系生成菜单的结构。如果菜单选项在一定程度上依赖于前面的选项，它就能成为该选
+项的子菜单。首先，前面的(父)选项必须是依赖列表中的一部分并且它们中必须有满足下面两个条件的选项：
+- 如果父选项为'n'，子选项必须不可见。
+- 如果父选项可见，子选项才能可见。
+
+config MODULES
+   bool "Enable loadable module support"
+
+config MODVERSIONS
+   bool "Set version information on all module symbols"
+   depends MODULES
+
+comment "module support disabled"
+   depends !MODULES
+
+MODVERSIONS 直接依赖 MODULES，这就意味着如果MODULES不为'n'，该选项才可见。换句话说，当
+MODULES可见时，选项才可见(MODULES的(空)依赖关系也是选项依赖关系的一部分)。
+
+Kconfig 语法
+------------
+
+配置文件描述了菜单选项，每行都是以一关键字开头(除了帮助信息)。下面的关键字结束一菜单选项：
+- config
+- menuconfig
+- choice/endchoice
+- comment
+- menu/endmenu
+- if/endif
+- source
+前5个同样可以用在菜单选项定义的开始。
+
+config:
+
+   "config" <symbol>
+   <config options>
+
+定义了一配置选项 <symbol> 并且可以接受任何前面介绍的属性。
+
+menuconfig:
+   "menuconfig" <symbol>
+   <config options>
+
+此关键字和前面的关键字很相似，但它在前面的基础上要求所有的子选项作为独立的行显示。(This is
+similar to the simple config entry above, but it also gives a hint to front
+ends, that all suboptions should be displayed as a separate list of options.)
+
+choices:
+
+   "choice"
+   <choice options>
+   <choice block>
+   "endchoice"
+
+该关键字定义了一组选择项，并且选项可以是前面描述的任何属性。尽管boolean只允许选择一个配置选项，
+tristate可以抒多个配置选项设为'm'，但选项只能是boolean或tristate类型。这可以在一个硬件有多
+个驱动的情况下使用，最终只有一个驱动被编译进/加载到内核，，但所有的驱动都可以编译成模块。
+选项可以接受的另一个选项是"optional"，这样选项就被设置为'n'，没有被选中的。
+
+comment:
+
+   "comment" <prompt>
+   <comment options>
+
+这里定义了在配置过程中显示给用户的注释，该注释还将写进输出文件中。唯一可用的可选项是依赖关系。
+
+menu:
+
+   "menu" <prompt>
+   <menu options>
+   <menu block>
+   "endmenu"
+
+这里定义了一个菜单，详细信息请看前面的"菜单结构"。唯一可用的可选项是依赖关系。
+
+if:
+
+   "if" <expr>
+   <if block>
+   "endif"
+
+这里定义了if结构。依赖关系<expr>被加到所有在if ... endif 中的菜单选项中。
