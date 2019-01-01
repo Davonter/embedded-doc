@@ -1,0 +1,1679 @@
+Linux 2.6.20内核配置选项
+01、Code maturity level options ---> 代码成熟等级选项
+01.01、 [ ] Prompt for development and/or incomplete code/drivers 默认情况下是选择的，这将会在设置界面中显示还在开发或者还没有完成的代码与驱动.你应该选择它，因为有许多设备可能必需选择这个选项才能进行配置，实际上它是安全的。
+
+02、General setup ---> 常规安装选项
+02.01、() Local version - append to kernel release
+在内核版本后面加上自定义的版本字符串(小于64字符),可以用"uname -a"命令看到
+02.01.01、Automatically append version information to the version string
+自动在版本字符串后面添加版本信息,编译时需要有perl以及git仓库支持。默认没选。
+02.01.02、Support for paging of anonymous memory(swap)
+这个选项将使你的内核支持虚拟内存，也就是让你的计算机好象拥有比实际内存更多 多的内存空间用来执行很大的程序。默认是选择的。
+02.01.03、System V IPC (IPC:Inter Process Communication)
+是组系统调用及函数库，它能让程序彼此间同步进行交换信息。某些程序以及DOS模拟环境都需要它。为进程提供通信机制，这将使系统中各进程间有交换信息与保持同步的能力。有些程序只有在选Y的情况下才能运行，所以不用考虑，这里一定要选。
+?	IPC Namespaces(new)
+IPC命名空间支持,不确定可以不选
+02.01.04、POSIX Message Queues 
+POSIX消息队列,这是POSIX IPC中的一部分
+02.01.05、BSD Process Accounting 
+将进程的统计信息写入文件的用户级系统调用,主要包括进程的创建时间/创建者/内存占用等信息 
+?	BSD Process Accounting version 3 file format 
+使用新的第三版文件格式,可以包含每个进程的PID和其父进程的PID,但是不兼容老版本的文件格式
+02.01.06、Export task/process statistics through netlink 
+通过netlink接口向用户空间导出任务/进程的统计信息,与BSD Process Accounting的不同之处在于这些统计信息在整个任务/进程生存期都是可用的 
+?	Enable per-task delay accounting 
+在统计信息中包含进程等候系统资源(cpu,IO同步,内存交换等)所花费的时间
+02.01.07、UTS Namespaces 
+UTS名字空间支持,不确定可以不选
+02.01.08、Auditing support 
+审计支持,某些内核模块(例如SELinux)需要它,只有同时选择其子项才能对系统调用进行审计 
+?	Enable system-call auditing support 
+支持对系统调用的审计 
+02.01.09、Kernel .config support 
+把内核的配置信息编译进内核中,以后可以通过scripts/extract-ikconfig脚本来提取这些信息 
+?	Enable access to .config through /proc/config.gz 
+允许通过/proc/config.gz访问内核的配置信息 
+02.01.10、Cpuset support 
+只有含有大量CPU(大于16个)的SMP系统或NUMA(非一致内存访问)系统才需要它 
+02.01.11、Create deprecated sysfs files
+		
+02.02、Kernel->user space relay support (formerly relayfs) 
+在某些文件系统上(比如debugfs)提供从内核空间向用户空间传递大量数据的接口
+02.02.01、Initramfs source file(s) 
+initrd已经被initramfs取代,如果你不明白这是什么意思,请保持空白
+02.02.02、Optimize for size (Look out for broken compilers!) 
+编译时优化内核尺寸(使用"-Os"而不是"-O2"参数编译),有时会产生错误的二进制代码 
+02.02.03、Optimize for size (Look out for broken compilers!) 
+编译时优化内核尺寸(使用"-Os"而不是"-O2"参数编译),有时会产生错误的二进制代码 
+02.02.04、Configure standard kernel features (for small systems) 
+配置标准的内核特性(为小型系统) 
+?	Enable 16-bit UID system calls 
+允许对UID系统调用进行过时的16-bit包装 
+?	Systole syscall support 
+不需要重启就能修改内核的某些参数和变量,如果你也选择了支持/proc,将能从/proc/sys存取可以影响内核行为的参数或变量 
+?	Load all symbols for debugging/kksymoops 
+装载所有的调试符号表信息,仅供调试时选择 
+?	Include all symbols in kallsyms 
+在kallsyms中包含内核知道的所有符号,内核将会增大300K 
+?	Do an extra kallsyms pass 
+除非你在kallsyms中发现了bug并需要报告这个bug才打开该选项 
+?	Support for hot-pluggable devices 
+支持热插拔设备,如usb与pc卡等,Udev也需要它 
+?	Enable support for printk 
+允许内核向终端打印字符信息,在需要诊断内核为什么不能运行时选择 
+?	BUG() support 
+显示故障和失败条件(BUG和WARN),禁用它将可能导致隐含的错误被忽略 
+?	Enable ELF core dumps 
+内存转储支持,可以帮助调试ELF格式的程序 
+?	Enable full-sized data structures for core 
+在内核中使用全尺寸的数据结构.禁用它将使得某些内核的数据结构减小以节约内存,但是将会降低性能 
+?	Enable futex support 
+快速用户空间互斥体可以使线程串行化以避免竞态条件,也提高了响应速度.禁用它将导致内核不能正确的运行基于glibc的程序 
+?	Enable eventpoll support 
+支持事件轮循的系统调用 
+?	Use full shmem filesystem 
+启用shmem支持.shmem是基于共享内存的文件系统(可能用到swap),在启用TMPFS后可以挂载为tmpfs供用户空间使用,它比简单的ramfs先进许多 
+?	Use full SLAB allocator 
+使用SLAB完全取代SLOB进行内存分配,SLAB是一种优秀的内存分配管理器,推荐使用 
+?	Enable VM event counters for /proc/vmstat 
+允许在/proc/vmstat中包含虚拟内存事件记数器 
+03、Loadable module support
+可加载模块支持
+03.01、Enable loadable module support 
+打开可加载模块支持,如果打开它则必须通过"make modules_install"把内核模块安装在/lib/modules/中 
+03.01.01、	Module unloading 
+允许卸载已经加载的模块 
+03.01.02、	Forced module unloading 
+允许强制卸载正在使用中的模块(比较危险) 
+03.01.03、	Module versioning support 
+允许使用其他内核版本的模块(可能会出问题) 
+03.01.04、	Source checksum for all modules 
+为所有的模块校验源码,如果你不是自己编写内核模块就不需要它 
+03.01.05、	Automatic kernel module loading 
+让内核通过运行modprobe来自动加载所需要的模块,比如可以自动解决模块的依赖关系 
+04、	Block layer
+　　　　块设备层
+04.01、Enable the block layer 
+块设备支持,使用硬盘/USB/SCSI设备者必选 
+04.02、Support for Large Block Devices 
+仅在使用大于2TB的块设备时需要 
+04.03、Support for tracing block io actions 
+块队列IO跟踪支持,它允许用户查看在一个块设备队列上发生的所有事件,可以通过blktrace程序获得磁盘当前的详细统计数据 
+04.04、Support for Large Single Files 
+仅在可能使用大于2TB的文件时需要 
+04.05、IO Schedulers 
+IO调度器 
+04.06.01、Anticipatory I/O scheduler 
+适用于大多数环境,但不太合适数据库应用 
+04.06.02、Deadline I/O scheduler 
+通常与Anticipatory相当,但更简洁小巧,更适合于数据库应用 
+04.06.03、CFQ I/O scheduler 
+为所有进程分配等量的带宽,适合于桌面多任务及多媒体应用 
+04.06.04、Default I/O scheduler 
+默认IO调度器 
+05、Processor type and features
+中央处理器(CPU)类型及特性
+05.1、	Symmetric multi-processing support 
+对称多处理器支持,如果你有多个CPU或者使用的是多核CPU就选上.此时"Enhanced Real Time Clock Support"选项必须开启,"Advanced Power Management"选项必须关闭 
+05.2、	Subarchitecture Type 
+处理器的子架构,大多数人都应当选择"PC-compatible" 
+05.3、	Processor family 
+处理器系列,请按照你实际使用的CPU选择 
+05.4、	Generic x86 support 
+通用x86支持,如果你的CPU能够在上述"Processor family"中找到就别选 
+05.5、	HPET Timer Support 
+HPET是替代8254芯片的新一代定时器,i686及以上级别的主板都支持,可以安全的选上 
+05.6、	Maximum number of CPUs 
+支持的最大CPU数,每增加一个内核将增加8K体积 
+05.7、	SMT (Hyperthreading) scheduler support 
+支持Intel的超线程(HT)技术 
+05.8、	Multi-core scheduler support 
+针对多核CPU进行调度策略优化 
+05.9、	Preemption Model 
+内核抢占模式 
+No Forced Preemption (Server) 
+适合服务器环境的禁止内核抢占 
+Voluntary Kernel Preemption (Desktop) 
+适合普通桌面环境的自愿内核抢占 
+Preemptible Kernel (Low-Latency Desktop) 
+适合运行实时程序的主动内核抢占 
+05.10、	Preempt The Big Kernel Lock 
+可以抢占大内核锁,应用于实时要求高的场合,不适合服务器环境 
+05.11、	Machine Check Exception 
+让CPU检测到系统故障时通知内核,以便内核采取相应的措施(如过热关机等) 
+Check for non-fatal errors on AMD Athlon/Duron / Intel Pentium 4 
+每5秒检测一次这些cpu的非致命错误并纠正它们,同时记入日志 
+check for P4 thermal throttling interrupt 
+当P4的cpu过热时显示一条警告消息 
+05.12、	Enable VM86 support 
+虚拟X86支持,在DOSEMU下运行16-bit程序或XFree86通过BIOS初始化某些显卡的时候才需要 
+05.13、	Toshiba Laptop support 
+Toshiba笔记本模块支持 
+05.14、	Dell laptop support 
+Dell笔记本模块支持 
+05.15、	Enable X86 board specific fixups for reboot 
+修正某些旧x86主板的重起bug,这种主板基本绝种了 
+05.16、	/dev/cpu/microcode - Intel IA32 CPU microcode support 
+使用不随Linux内核发行的IA32微代码,你必需有IA32微代码二进制文件,仅对Intel的CPU有效 
+05.17、	/dev/cpu/*/msr - Model-specific register support 
+在多cpu系统中让特权CPU访问x86的MSR寄存器 
+05.18、	/dev/cpu/*/cpuid - CPU information support 
+能从/dev/cpu/x/cpuid获得CPU的唯一标识符(CPUID) 
+05.19、	Firmware Drivers 
+固件驱动程序 
+BIOS Enhanced Disk Drive calls determine boot disk 
+有些BIOS支持从某块特定的硬盘启动(如果BIOS不支持则可能无法启动),目前大多数BIOS还不支持 
+BIOS update support for DELL systems via sysfs 
+仅适用于DELL机器 
+Dell Systems Management Base Driver 
+仅适用于DELL机器 
+05.20、	High Memory Support 
+最高内存支持,总内存小于等于1G的选"off",大于4G的选"64G" 
+05.21、	Memory split 
+如果你不是绝对清楚自己在做什么,不要改动这个选项 
+05.22、	Memory model 
+一般选"Flat Memory",其他选项涉及内存热插拔 
+05.23、	64 bit Memory and IO resources 
+使用64位的内存和IO资源 
+05.24、	Allocate 3rd-level pagetables from highmem 
+在内存很多(大于4G)的机器上将用户空间的页表放到高位内存区,以节约宝贵的低端内存 
+05.25、	Math emulation 
+数学协处理器仿真,486DX以上的cpu就不要选它了 
+05.26、	MTRR (Memory Type Range Register) support 
+打开它可以提升PCI/AGP总线上的显卡2倍以上的速度,并且可以修正某些BIOS错误 
+05.27、	Boot from EFI support 
+EFI是一种可代替传统BIOS的技术(目前的Grub/LILO尚不能识别它),但是现在远未普及 
+05.28、	Enable kernel irq balancing 
+让内核将irq中断平均分配给多个CPU以进行负载均衡,但是要配合irqbanlance守护进程才行 
+05.29、	Use register arguments 
+使用"-mregparm=3"参数编译内核,将前3个参数以寄存器方式进行参数调用,可以生成更紧凑和高效的代码 
+05.30、	Enable seccomp to safely compute untrusted bytecode 
+只有嵌入式系统可以不选 
+05.31、	Timer frequency 
+内核时钟频率,桌面推荐"1000 HZ",服务器推荐"100 HZ"或"250 HZ" 
+05.32、	kexec system call 
+提供kexec系统调用,可以不必重启而切换到另一个内核 
+05.33、	kernel crash dumps 
+被kexec启动后产生内核崩溃转储 
+05.34、	Physical address where the kernel is loaded 
+内核加载的物理地址,除非你知道自己在做什么,否则不要修改.在提供kexec系统调用的情况下可能要修改它 
+05.35、	Support for hot-pluggable CPUs 
+对热插拔CPU提供支持 
+05.36、	Compat VDSO support 
+如果Glibc版本大于等于2.3.3就不选,否则就选上 
+06、Power management options
+电源管理选项
+06.01、	Power Management support 
+电源管理有APM和ACPI两种标准且不能同时使用.即使关闭该选项,X86上运行的Linux也会在空闲时发出HLT指令将CPU进入睡眠状态 
+Legacy Power Management API 
+传统的电源管理API,比如软关机和系统休眠等接口 
+Power Management Debug Support 
+仅供调试使用 
+Driver model /sys/devices/.../power/state files 
+内核帮助文档反对使用该选项,即将被废除 
+06.02、	ACPI (Advanced Configuration and Power Interface) Support 
+必须运行acpid守护程序ACPI才能起作用.ACPI是为了取代APM而设计的,因此应该尽量使用ACPI而不是APM 
+AC Adapter 
+如果你的系统可以在AC和电池之间转换就可以选 
+Battery 
+通过/proc/acpi/battery向用户提供电池状态信息,用电池的笔记本可以选 
+Button 
+守护程序捕获Power,Sleep,Lid按钮事件,并根据/proc/acpi/event做相应的动作,软件控制的poweroff需要它 
+Video 
+仅对集成在主板上的显卡提供ACPI2.0支持,且不是所有集成显卡都支持 
+Generic Hotkey 
+统一的热键驱动,建议不选 
+Fan 
+允许通过用户层的程序来对系统风扇进行控制(开,关,查询状态),支持它的硬件并不多 
+Dock 
+支持由ACPI控制的集线器(docking stations) 
+Processor 
+让ACPI处理空闲状态,并使用ACPI C2和C3处理器状态在空闲时节省电能,同时它还被cpufreq的"Performance-state drivers"选项所依赖 
+Thermal Zone 
+系统温度过高时可以利用ACPI thermal zone及时调整工作状态以避免你的CPU被烧毁 
+ASUS/Medion Laptop Extras 
+ASUS笔记本专用,以提供额外按钮的支持,用户可以通过/proc/acpi/asus来打开或者关闭LCD的背光/调整亮度/定制LED的闪烁指示等功能 
+IBM ThinkPad Laptop Extras 
+IBM ThinkPad专用 
+Toshiba Laptop Extras 
+Toshiba笔记本专用 
+Disable ACPI for systems before Jan 1st this year 
+输入四位数的年份,在该年的1月1日前不使用ACPI的功能("0"表示一直使用) 
+Debug Statements 
+详细的ACPI调试信息,不搞开发就别选 
+Power Management Timer Support 
+这个Timer在所有ACPI兼容的平台上都可用,且不会受PM功能的影响,建议总是启用它.如果你在kernel log中看到了'many lost ticks'那就必须启用它 
+ACPI0004,PNP0A05 and PNP0A06 Container Driver 
+支持内存和CPU的热插拔 
+Smart Battery System 
+支持依赖于I2C的"智能电池".这种电池非常老旧且罕见,还与当前的ACPI标准兼容性差 
+06.03、	APM (Advanced Power Management) BIOS Support 
+APM在SMP机器上必须关闭,一般来说当前的笔记本都支持ACPI,所以应尽量关闭该该选项 
+Ignore USER SUSPEND 
+只有NEC Versa M系列的笔记本才需要选择这一项 
+Enable PM at boot time 
+系统启动时即启用APM,选上这个选项能让系统自动的进行电源管理,但常常导致启动时死机 
+Make CPU Idle calls when idle 
+系统空闲时调用空闲指令(halt),只有老式的CPU才需要选它,且对于SMP系统必须关闭 
+Enable console blanking using APM 
+在屏幕空白时关闭LCD背光,事实上对所有的笔记本都无效 
+RTC stores time in GMT 
+将硬件时钟应该设为格林威治时间,否则视为本地时间.建议你使用GMT,这样你无须为时区的改变而担心 
+Allow interrupts during APM BIOS calls 
+允许APM的BIOS调用时中断,IBM Thinkpad的一些新机器需要这项.如果休眠时挂机(包括睡下去就醒不来),可以试试它 
+Use real mode APM BIOS call to power off 
+此驱动为某些有Bug的BIOS准备,如果你的系统不能正常关机或关机时崩溃,可以试试它 
+06.04、	CPU Frequency scaling 
+允许动态改变CPU主频,达到省电和降温的目的,必须同时启用下面的一种governor才行 
+Enable CPUfreq debugging 
+允许对CPUfreq进行调试 
+CPU frequency translation statistics 
+通过sysfs文件系统输出CPU频率变换的统计信息 
+CPU frequency translation statistics details 
+输出详细的CPU频率变换统计信息 
+Default CPUFreq governor 
+默认的CPU频率调节器 
+'performance' governor 
+'性能'优先,静态的将频率设置为cpu支持的最高频率 
+'powersave' governor 
+'节能'优先,静态的将频率设置为cpu支持的最低频率 
+'userspace' governor for userspace frequency scaling 
+既允许手动调整cpu频率,也允许用户空间的程序动态的调整cpu频率(需要额外的调频软件,比如cpufreqd) 
+'ondemand' cpufreq policy governor 
+'立即响应',周期性的考察CPU负载并自动的动态调整cpu频率(不需要额外的调频软件),适合台式机 
+'conservative' cpufreq governor 
+'保守',和'ondemand'相似,但是频率的升降是渐变式的(幅度不会很大),更适合用于笔记本/PDA/AMD64环境 
+ACPI Processor P-States driver 
+将ACPI2.0的处理器性能状态报告给CPUFreq processor drivers以决定如何调整频率,该选项依赖于ACPI->Processor 
+{省略的部分请按照自己实际使用的CPU选择} 
+/proc/acpi/processor/../performance interface 
+内核帮助文档反对使用该选项,即将被废除 
+Relaxed speedstep capability checks 
+放松对系统的speedstep兼容性检查,仅在某些老旧的Intel系统上需要打开 
+07、Bus options (PCI, PCMCIA, EISA, MCA, ISA)
+总线选项
+PCI support 
+PCI支持,如果使用了PCI或PCI Express设备就必选 
+PCI access mode 
+PCI访问模式,强列建议选"Any"(系统将优先使用"MMConfig",然后使用"BIOS",最后使用"Direct"检测PCI设备) 
+PCI Express support 
+PCI Express支持(目前主要用于显卡和千兆网卡) 
+PCI Express Hotplug driver 
+如果你的主板和设备都支持PCI Express热插拔就可以选上 
+Use polling mechanism for hot-plug events 
+对热插拔事件采用轮询机制,仅用于测试目的 
+Root Port Advanced Error Reporting support 
+由PCI Express AER驱动程序处理发送到Root Port的错误信息 
+Message Signaled Interrupts (MSI and MSI-X) 
+充许设备通过PCI总线写入内存堆栈产生一个中断而不是使用默认的IRQ中断,建议不选 
+PCI Debugging 
+将PCI调试信息输出到系统日志里 
+Interrupts on hypertransport devices 
+允许本地的hypertransport设备使用中断 
+ISA support 
+现在基本上没有ISA的设备了,如果你有就选吧 
+MCA support 
+微通道总线,老旧的IBM的台式机和笔记本上可能会有这种总线 
+NatSemi SCx200 support 
+在使用AMD Geode处理器的机器上才可能有 
+PCCARD (PCMCIA/CardBus) support 
+PCMCIA卡(主要用于笔记本)支持 
+Enable PCCARD debugging 
+仅供调试 
+16-bit PCMCIA support 
+一些老的PCMCIA卡使用16位的CardBus 
+32-bit CardBus support 
+当前的PCMCIA卡基本上都是32位的CardBus 
+CardBus yenta-compatible bridge support 
+使用PCMCIA卡的基本上都需要选择这一项,子项请按照自己实际使用的PCMCIA卡选择 
+{省略的部分请按照自己实际使用的PCMCIA卡选择} 
+PCI Hotplug Support 
+PCI热插拔支持,如果你有这样的设备就到子项中去选吧 
+08、Executable file formats
+可执行文件格式
+Kernel support for ELF binaries 
+ELF是开放平台下最常用的二进制文件格式,支持动态连接,支持不同的硬件平台.除非你知道自己在做什么,否则必选 
+Kernel support for a.out and ECOFF binaries 
+早期UNIX系统的可执行文件格式,目前已经被ELF格式取代 
+Kernel support for MISC binaries 
+允许插入二进制的封装层到内核中,使用Java,.NET,Python,Lisp等语言编写的程序时需要它 
+09、Networking
+网络
+Networking options 
+网络选项 
+Network packet debugging 
+在调试不合格的包时加上额外的附加信息,但在遇到Dos攻击时你可能会被日志淹没 
+Packet socket 
+这种Socket可以让应用程序(比如tcpdump,iptables)直接与网络设备通讯,而不通过内核中的其它中介协议 
+Packet socket: mmapped IO 
+让Packet socket驱动程序使用IO映射机制以使连接速度更快 
+Unix domain sockets 
+一种仅运行于本机上的效率高于TCP/IP的Socket,简称Unix socket.许多程序都使用它在操作系统内部进行进程间通信(IPC),比如X Window和syslog 
+Transformation user configuration interface 
+为IPsec(可在ip层加密)之类的工具提供XFRM用户配置接口支持 
+Transformation sub policy support 
+XFRM子策略支持,仅供开发者使用 
+PF_KEY sockets 
+用于可信任的密钥管理程序和操作系统内核内部的密钥管理进行通信,IPsec依赖于它 
+TCP/IP networking 
+TCP/IP协议当然要选 
+IP: multicasting 
+群组广播,似乎与网格计算有关,仅在使用MBONE的时候才需要 
+IP: advanced router 
+高级路由,如果想做一个路由器就选吧 
+IP: policy routing 
+策略路由 
+IP: equal cost multipath 
+用于路由的基于目的地址的负载均衡 
+IP: verbose route monitoring 
+显示冗余的路由监控信息 
+IP: kernel level autoconfiguration 
+在内核启动时自动配置ip地址/路由表等,需要从网络启动的无盘工作站才需要这个东西 
+IP: tunneling 
+IP隧道,将一个IP报文封装在另一个IP报文内的技术 
+IP: GRE tunnels over IP 
+基于IP的GRE(通用路由封装)隧道 
+IP: multicast routing 
+多重传播路由 
+IP: ARP daemon support 
+这东西尚处于试验阶段就已经被废弃了 
+IP: TCP syncookie support 
+抵抗SYN flood攻击的好东西,要启用它必须同时启用/proc文件系统和"Sysctl support",然后在系统启动并挂载了/proc之后执行"echo 1 >/proc/sys/net/ipv4/tcp_syncookies"命令 
+IP: AH transformation 
+IPsec验证头(AH)实现了数据发送方的验证处理,可确保数据既对于未经验证的站点不可用也不能在路由过程中更改 
+IP: ESP transformation 
+IPsec封闭安全负载(ESP)实现了发送方的验证处理和数据加密处理,用以确保数据不会被拦截/查看或复制 
+IP: IPComp transformation 
+IPComp(IP静荷载压缩协议),用于支持IPsec 
+IP: IPsec transport mode 
+IPsec传输模式,常用于对等通信,用以提供内网安全.数据包经过了加密但IP头没有加密,因此任何标准设备或软件都可查看和使用IP头 
+IP: IPsec tunnel mode 
+IPsec隧道模式,用于提供外网安全(包括虚拟专用网络).整个数据包(数据头和负载)都已经过加密处理且分配有新的ESP头/IP头和验证尾,从而能够隐藏受保护站点的拓扑结构 
+IP: IPsec BEET mode 
+IPsec BEET模式 
+INET: socket monitoring interface 
+socket监视接口,一些Linux本地工具(如:包含ss的iproute2)需要使用它 
+TCP: advanced congestion control 
+高级拥塞控制,如果没有特殊需求(比如无线网络)就别选了,内核会自动将默认的拥塞控制设为"Cubic"并将"Reno"作为候补 
+IP: Virtual Server Configuration 
+IP虚拟服务器允许你基于多台物理机器构建一台高性能的虚拟服务器,不玩集群就别选了 
+The IPv6 protocol 
+你要是需要IPv6就选吧 
+NetLabel subsystem support 
+NetLabel子系统为诸如CIPSO与RIPSO之类能够在分组信息上添加标签的协议提供支持,如果你看不懂就别选了 
+Security Marking 
+对网络包进行安全标记,类似于nfmark,但主要是为安全目的而设计,如果你不明白的话就别选 
+Network packet filtering (replaces ipchains) 
+Netfilter可以对数据包进行过滤和修改,可以作为防火墙("packet filter"或"proxy-based")或网关(NAT)或代理(proxy)或网桥使用.选中此选项后必须将"Fast switching"关闭,否则将前功尽弃 
+Network packet filtering debugging 
+仅供开发者调试Netfilter使用 
+Bridged IP/ARP packets filtering 
+如果你希望使用一个针对桥接的防火墙就打开它 
+Core Netfilter Configuration 
+核心Netfilter配置(当包流过Chain时如果match某个规则那么将由该规则的target来处理,否则将由同一个Chain中的下一个规则进行匹配,若不match所有规则那么最终将由该Chain的policy进行处理) 
+Netfilter netlink interface 
+允许Netfilter在与用户空间通信时使用新的netlink接口.netlink Socket是Linux用户态与内核态交流的主要方法之一,且越来越被重视 
+Netfilter NFQUEUE over NFNETLINK interface 
+通过NFNETLINK接口对包进行排队 
+Netfilter LOG over NFNETLINK interface 
+通过NFNETLINK接口对包记录.该选项废弃了ipt_ULOG和ebg_ulog机制,并打算在将来废弃基于syslog的ipt_LOG和ip6t_LOG模块 
+Layer 3 Independent Connection tracking 
+独立于第三层的链接跟踪,通过广义化的ip_conntrack支持其它非IP协议的第三层协议 
+Netfilter Xtables support 
+如果你打算使用ip_tables,ip6_tables,arp_tables之一就必须选上 
+"CLASSIFY" target support 
+允许为包设置优先级,一些排队规则(atm,cbq,dsmark,pfifo_fast,htb,prio)需要使用它 
+"CONNMARK" target support 
+类似于"MARK",但影响的是连接标记的值 
+"DSCP" target support 
+允许对ip包头部的DSCP(Differentiated Services Codepoint)字段进行修改,该字段常用于Qos 
+"MARK" target support 
+允许对包进行标记(通常配合ip命令使用),这样就可以改变路由策略或者被其它子系统用来改变其行为 
+"NFQUEUE" target Support 
+用于替代老旧的QUEUE(iptables内建的target之一),因为NFQUEUE能支持最多65535个队列,而QUEUE只能支持一个 
+"NOTRACK" target support 
+允许规则指定哪些包不进入链接跟踪/NAT子系统 
+"SECMARK" target support 
+允许对包进行安全标记,用于安全子系统 
+"CONNSECMARK" target support 
+针对链接进行安全标记,同时还会将连接上的标记还原到包上(如果链接中的包尚未进行安全标记),通常与SECMARK target联合使用 
+"comment" match support 
+允许你在iptables规则集中加入注释 
+"connbytes" per-connection counter match support 
+允许针对单个连接内部每个方向(进/出)匹配已经传送的字节数/包数 
+"connmark" connection mark match support 
+允许针对每个会话匹配先前由"CONNMARK"设置的标记值 
+"conntrack" connection tracking match support 
+连接跟踪匹配,是"state"的超集,它允许额外的链接跟踪信息,在需要设置一些复杂的规则(比如网关)时很有用 
+"DCCP" protocol match support 
+DCCP是打算取代UDP的新传输协议,它在UDP的基础上增加了流控和拥塞控制机制,面向实时业务 
+"DSCP" match support 
+允许对IP包头的DSCP字段进行匹配 
+"ESP" match support 
+允许对IPSec包中的ESP头进行匹配,使用IPsec的话就选上吧 
+"helper" match support 
+加载特定协议的连接跟踪辅助模块,由该模块过滤所跟踪的连接类型的包,比如ip_conntrack_ftp模块 
+"length" match support 
+允许对包的长度进行匹配 
+"limit" match support 
+允许根据包的进出速率进行规则匹配,常和"LOG target"配合使用以抵抗某些Dos攻击 
+"mac" address match support 
+允许根据以太网的MAC进行匹配,常用于无线网络环境 
+"mark" match support 
+允许对先前由"MARK"标记的特定标记值进行匹配 
+IPsec "policy" match support 
+使用IPsec就选上吧 
+Multiple port match support 
+允许对TCP或UDP包同时匹配多个端口(通常情况下只能匹配一个端口) 
+"physdev" match support 
+允许对到达的或将要离开的物理桥端口进行匹配 
+"pkttype" packet type match support 
+允许对封包目的地址类别(广播/群播/直播)进行匹配 
+"quota" match support 
+允许对总字节数的限额值进行匹配 
+"realm" match support 
+允许对iptables中的路由子系统中的realm值进行匹配 
+"sctp" protocol match support 
+流控制传输协议(SCTP),十年以后也许能够普及的东西 
+"state" match support 
+这是对包进行分类的有力工具,它允许利用连接跟踪信息对连接中处于特定状态的包进行匹配 
+"statistic" match support 
+允许根据一个给定的百分率对包进行周期性的或随机性的匹配 
+"string" match support 
+允许根据包所承载的数据中包含的特定字符串进行匹配 
+"tcpmss" match support 
+允许根据TCP SYN包头中的MSS(最大分段长度)选项的值进行匹配 
+IP: Netfilter Configuration 
+针对IPv4的Netfilter配置 
+Connection tracking (required for masq/NAT) 
+链接跟踪.可用于报文伪装或地址转换,也可用于增强包过滤能力 
+Connection tracking flow accounting 
+允许针对每个连接记录已经传送的字节/包数,常用于connbytes match 
+Connection mark tracking support 
+允许对连接进行标记,与针对单独的包进行标记的不同之处在于它是针对连接流的.CONNMARK target和connmark match需要它的支持 
+Connection tracking security mark support 
+允许对连接进行安全标记,通常这些标记包(SECMARK)复制到其所属连接(CONNSECMARK),再从连接复制到其关联的包(SECMARK) 
+Connection tracking events 
+连接跟踪事件支持.如果启用这个选项,连接跟踪代码将提供一个notifier链,它可以被其它内核代码用来获知连接跟踪状态的改变 
+Connection tracking netlink interface 
+支持基于netlink的用户空间接口 
+SCTP protocol connection tracking support 
+SCTP是IP网面向多媒体通信的新一代的流控制传输协议 
+FTP protocol support 
+FTP协议 
+IRC protocol support 
+IRC协议是一种用来实时聊天协议,用过mIRC的人应当不陌生 
+NetBIOS name service protocol support 
+NetBIOS名字服务协议 
+TFTP protocol support 
+TFTP是基于UDP的比FTP简单的文件传输协议 
+Amanda backup protocol support 
+Amanda备份协议 
+PPTP protocol support 
+点对点隧道协议(PPTP)是一种支持多协议虚拟专用网络的网络技术,ADSL用户对它应该很熟悉 
+H.323 protocol support 
+ITU-T提出的用于IP电话的协议 
+SIP protocol support 
+IETE提出的用于IP电话的协议 
+IP Userspace queueing via NETLINK 
+已废弃 
+IP tables support (required for filtering/masq/NAT) 
+要用iptables就肯定要选上 
+IP range match support 
+允许对ip地址的范围进行匹配 
+TOS match support 
+允许对ip包头的TOS(Type Of Service)字段进行匹配 
+recent match support 
+可以创建一个或多个刚刚使用过的ip地址列表,然后根据这些列表进行匹配 
+ECN match support 
+允 许对TCP/IP包头的ECN(Explicit Congestion Notification)字段进行匹配.ECN是一种显式拥塞通知技术,它不但要求路由器支持而且要求端到端主机的支持,其基本思想是当路由器发生早期 拥塞时不是丢弃包而是尽量对包进行标记,接收方接到带有ECN提示的包时,通知发送方网络即将发生拥塞,也就是它通过对包的标记提示TCP源即将发生拥 塞,从而引发拥塞避免算法 
+AH match support 
+允许对IPSec包头的AH字段进行匹配 
+TTL match support 
+允许对ip包头的TTL(生存期)字段进行匹配 
+Owner match support 
+允许对本地生成的包按照其宿主(user,group,process,session)进行匹配 
+address type match support 
+允许对地址类型(单播,本地,广播)进行匹配 
+hashlimit match support 
+是limit的升级,它基于你选择的ip地址与/或端口动态的创建以limit为桶(bucket)的哈希表.它可以创建诸如"为每个特定的目标IP分配10kpps"或"允许每个特定的源IP分配500pps"之类的规则 
+Packet filtering 
+定义filter表以允许对包进行过滤 
+REJECT target support 
+允许返回一个ICMP错误而不是简单的丢弃包 
+LOG target support 
+允许将符合条件的包头信息通过syslog进行记录 
+ULOG target support 
+透过netlink socket将符合条件的封包交给用户空间的ulogd守护进程.反对使用该选项,因为它已经被NETFILTER_NETLINK_LOG代替 
+TCPMSS target support 
+允许修改TCP包头中的MSS(最大分段长度)选项值 
+Full NAT 
+允许进行伪装/端口转发以及其它的NAT功能,仅在你需要使用iptables中的nat表时才需要选择 
+Packet mangling 
+在iptables中启用mangle表以便对包进行各种修改,常用于改变包的路由 
+raw table support (required for NOTRACK/TRACE) 
+在iptables中添加一个'raw'表,该表在netfilter框架中非常靠前,并在PREROUTING和OUTPUT链上有钩子,从而可以对收到的数据包在连接跟踪前进行处理 
+ARP tables support 
+ARP表支持.只有在局域网中才有ARP欺骗问题,另外路由器也会遭到ARP欺骗 
+ARP packet filtering 
+ARP包过滤.对于进入和离开本地的ARP包定义一个filter表,在桥接的情况下还可以应用于被转发ARP包 
+ARP payload mangling 
+允许对ARP包的荷载部分进行修改,比如修改源和目标物理地址 
+IPv6: Netfilter Configuration 
+针对IPv6的Netfilter配置,需要的话可以参考前面IPv4的Netfilter配置进行选择 
+DECnet: Netfilter Configuration 
+针对DECnet的Netfilter配置 
+Bridge: Netfilter Configuration 
+针对桥接的Netfilter配置 
+DCCP Configuration 
+数据报拥塞控制协议在UDP的基础上增加了流控和拥塞控制机制,使数据报协议能够更好地用于流媒体业务的传输 
+SCTP Configuration 
+流控制传输协议是一种新兴的传输层协议.TCP协议一次只能连接一个IP地址而在SCTP协议一次可以连接多个IP地址且可以自动平衡网络负载,一旦某一个IP地址失效会自动将网络负载转移到其他IP地址上 
+TIPC Configuration 
+透明内部进程间通信协议,以共享内存为基础实现任务和资源的调度,专门用于内部集群通信 
+Asynchronous Transfer Mode (ATM) 
+异步传输模式(ATM)支持 
+802.1d Ethernet Bridging 
+802.1d以太网桥 
+802.1Q VLAN Support 
+802.1Q虚拟局域网 
+DECnet Support 
+DECnet是一种很生僻的协议 
+ANSI/IEEE 802.2 LLC type 2 Support 
+看不懂可以不选 
+The IPX protocol 
+IPX协议 
+Appletalk protocol support 
+与Mac机器通信的协议 
+CCITT X.25 Packet Layer 
+大约没人需要这东西 
+LAPB Data Link Driver 
+大约没人需要这东西 
+Acorn Econet/AUN protocols 
+一种被Acorn计算机使用的又老又慢的协议 
+WAN router 
+广域网路由 
+QoS and/or fair queueing 
+如果你需要Qos或公平队列就选吧 
+Network testing 
+网络测试,仅供调试使用 
+Amateur Radio support 
+业余无线电支持 
+IrDA (infrared) subsystem support 
+红外线支持,比如无线鼠标或无线键盘 
+Bluetooth subsystem support 
+蓝牙支持 
+Generic IEEE 802.11 Networking Stack 
+通用无线局域网(IEEE 802.11系列协议)支持 
+Device Drivers
+设备驱动程序
+Generic Driver Options 
+驱动程序通用选项 
+Select only drivers that don't need compile-time external firmware 
+只显示那些不需要内核对外部设备的固件作map支持的驱动程序,除非你有某些怪异硬件,否则请选上 
+Prevent firmware from being built 
+不编译固件.固件一般是随硬件的驱动程序提供的,仅在更新固件的时候才需要重新编译.建议选上 
+Userspace firmware loading support 
+提供某些内核之外的模块需要的用户空间固件加载支持,在内核树之外编译的模块可能需要它 
+Driver Core verbose debug messages 
+让驱动程序核心在系统日志中产生冗长的调试信息,仅供调试 
+Connector - unified userspace <-> kernelspace linker 
+统一的用户空间和内核空间连接器,工作在netlink socket协议的顶层.不确定可以不选 
+Report process events to userspace 
+向用户空间报告进程事件(fork,exec,id变化(uid,gid,suid) 
+Memory Technology Devices (MTD) 
+特殊的存储技术装置,如常用于数码相机或嵌入式系统的闪存卡 
+Parallel port support 
+并口支持(传统的打印机接口) 
+Plug and Play support 
+即插即用支持,若未选则应当在BIOS中关闭"PnP OS".这里的选项与PCI设备无关 
+PnP Debug Messages 
+该选项仅供调试使用 
+ISA Plug and Play support 
+ISA设备即插即用支持 
+Plug and Play BIOS support 
+Linux 使用"Plug and Play BIOS"规范v1.0A(1994年)中定义的PNPBIOS自动检测主板上的资源和设备,但是其中的某些特性目前尚未实现,比如:事件通知/扩展坞 (Docking Station)信息/ISAPNP服务.如果你希望由内核检测主板上的设备并为其分配资源(此时BIOS中的"PnP OS"必须开启)可以选上,此外,PNPBIOS还有助于防止主板上的设备与其他总线设备冲突.不过需要注意的是ACPI将会逐渐取代PNPBIOS(虽 然目前两者可以共存),所以如果你的系统不使用ISA设备并且支持ACPI,建议你不要选中该选项并将BIOS中的"PnP OS"关闭 
+Plug and Play BIOS /proc interface 
+该选项仅供调试使用 
+Plug and Play ACPI support 
+让Linux使用PNPACPI自动检测主板上内建的设备并为其分配资源(即使这些设备已被BIOS禁用),它有助于避免设备之间的资源(如中断)冲突 
+Block devices 
+块设备 
+Normal floppy disk support 
+通用软驱支持 
+XT hard disk support 
+古董级产品 
+Parallel port IDE device support 
+通过并口与计算机连接的IDE设备,比如某些老旧的外接光驱或硬盘之类 
+Compaq SMART2 support 
+基于Compaq SMART2控制器的磁盘阵列卡 
+Compaq Smart Array 5xxx support 
+基于Compaq SMART控制器的磁盘阵列卡 
+Mylex DAC960/DAC1100 PCI RAID Controller support 
+古董级产品 
+Micro Memory MM5415 Battery Backed RAM support 
+一种使用电池做后备电源的内存 
+Loopback device support 
+Loopback是指拿文件来模拟块设备,比如可以将一个iso9660镜像文件挂成一个文件系统 
+Cryptoloop Support 
+使用系统提供的加密API对Loopback设备加密,但不能用于日志型文件系统 
+Network block device support 
+让你的电脑成为网络块设备的客户端 
+Promise SATA SX8 support 
+基于Promise公司的SATA SX8控制器的RAID卡 
+Low Performance USB Block driver 
+它不是用来支持U盘的,不懂的就别选 
+RAM disk support 
+内存中的虚拟磁盘,大小固定(由下面的选项决定,也可给内核传递"ramdisk_size=参数"来决定),它的功能和代码都比shmem简单许多 
+Default number of RAM disks 
+默认RAM disk的数量 
+Default RAM disk size (kbytes) 
+仅在你真正知道它的含义时才允许修改 
+Default RAM disk block size (bytes) 
+每一个RAM disk的默认块大小,设为PAGE_SIZE的值时效率最高 
+Initial RAM filesystem and RAM disk (initramfs/initrd) support 
+如果启动计算机所必须的模块都在内核里的话可以不选此项 
+Packet writing on CD/DVD media 
+CD/DVD刻录支持 
+Free buffers for data gathering 
+用于收集写入数据的缓冲区个数(每个占用64Kb内存),缓冲区越多性能越好 
+Enable write caching 
+为CD-R/W设备启用写入缓冲,目前这是一个比较危险的选项 
+ATA over Ethernet support 
+以太网ATA设备支持 
+Misc devices 
+杂项设备 
+ATA/ATAPI/MFM/RLL support 
+通常是IDE硬盘和ATAPI光驱.纯SCSI系统且不使用这些接口可以不选 
+Max IDE interfaces 
+最大IDE接口数,两个IDE插槽一般相当于4个接口 
+Enhanced IDE/MFM/RLL disk/cdrom/tape/floppy support 
+EIDE支持是当然要选的,否则540MB以上的硬盘都不认识而且不支持主从设备 
+Support for SATA (deprecated; conflicts with libata SATA driver) 
+反对使用,该选项与libata SATA驱动有冲突 
+Use old disk-only driver on primary interface 
+没人用这些古董了 
+Include IDE/ATA-2 DISK support 
+ATA-2支持,除非你的硬盘是古董,否则必选 
+Use multi-mode by default 
+如果不确定就别选,除非出现帮助中指出的错误 
+PCMCIA IDE support 
+通过PCMCIA卡与计算机连接的IDE设备,比如某些外置硬盘或光驱 
+Include IDE/ATAPI CDROM support 
+有IDE光驱的就选 
+Include IDE/ATAPI TAPE support 
+有IDE磁带的就选 
+Include IDE/ATAPI FLOPPY support 
+有IDE软驱的就选 
+SCSI emulation support 
+SCSI仿真,以前刻录光碟时需要,现在不需要了 
+IDE Taskfile Access 
+对介质进行直接的原始访问,它是一个复杂且有效的测试和校验硬件的方案,可以在驱动层之下执行数据恢复工作 
+generic/default IDE chipset support 
+通用IDE芯片组支持 
+CMD640 chipset bugfix/support 
+586以前的主板上常用,毛病多多 
+PNP EIDE support 
+外接的即插即用EIDE卡支持 
+PCI IDE chipset support 
+基于PCI总线的IDE芯片组支持,帮助IDE驱动自动检测和配置所有基于PCI的IDE接口 
+Sharing PCI IDE interrupts support 
+与其他PCI设备共享中断,一来可能冲突,二来降低性能,不选为妙 
+Boot off-board chipsets first support 
+不使用外接IDE控制器的就别选,使用外接IDE控制器的注意看帮助 
+Generic PCI IDE Chipset Support 
+通用的PCI IDE芯片组支持,如果你的芯片组在下面能找到就别选 
+OPTi 82C621 chipset enhanced support 
+OPTi 82C621 EIDE控制器 
+RZ1000 chipset bugfix/support 
+486/586年代的玩艺 
+Generic PCI bus-master DMA support 
+通用的PCI总线控制器DMA支持,586以上的系统都支持 
+Force enable legacy 2.0.X HOSTS to use DMA 
+历史遗留问题,别管它,不选 
+Use PCI DMA by default when available 
+默认启用DMA,586以上的系统都支持,建议选择 
+Enable DMA only for disks 
+只对硬盘启用DMA,若你的光驱不支持DMA就选上 
+{此处省略的部分按照自己主板上实际使用的芯片组进行选择} 
+Other IDE chipset support 
+其它IDE芯片组支持(多数需要在引导时指定特定的内核参数),如果你使用这样的芯片组就按实际情况选择子项吧 
+IGNORE word93 Validation BITS 
+ATA-4和ATA-5规范中对于如何在80针的数据线上探测解释的不明确,导致了两种不同标准的产品同时出现,这可能导致ATA-66/100降低为ATA-33,若出现这个问题,可以打开这个选项忽略这种不同,但是又有可能导致另外的问题 
+Old hard disk (MFM/RLL/IDE) driver 
+旧版本的MFM/RLL/IDE驱动,不建议使用 
+SCSI device support 
+SCSI设备 
+RAID Transport Class 
+用于SCSI设备的软件RAID支持,需要配合外部工具 
+SCSI device support 
+有任何SCSI/SATA/USB/光纤/FireWire/IDE-SCSI仿真设备之一就必须选上 
+legacy /proc/scsi/ support 
+一些老的刻录程序可能需要它 
+SCSI disk support 
+SCSI硬盘或U盘 
+SCSI tape support 
+SCSI磁带 
+SCSI OnStream SC-x0 tape support 
+另一种SCSI磁带 
+SCSI CDROM support 
+SCSI CDROM 
+Enable vendor-specific extensions 
+仅在古董级的SCSI CDROM设备上才需要 
+SCSI generic support 
+若有SCSI硬盘/CD-ROM/tape之外的SCSI设备才需要选择 
+SCSI media changer support 
+一种SCSI备份设备 
+Probe all LUNs on each SCSI device 
+在每个SCSI设备上探测逻辑设备数.只在一个SCSI设备上有多个逻辑设备(模拟多个SCSI设备,比如多口读卡器)时才需要选它,一般的SCSI设备不需要 
+Verbose SCSI error reporting 
+以易读的方式报告SCSI错误,内核将会增大12K 
+SCSI logging facility 
+启用SCSI日志(默认并不开启,需要在挂载/proc后执行echo "scsi log token [level]" > /proc/scsi/scsi命令才能打开日志),可用于跟踪和捕获SCSI设备的错误 
+SCSI Transports 
+SCSI接口类型,下面的子项可以全不选,内核中若有其他部分依赖它,会自动选上 
+Parallel SCSI (SPI) Transport Attributes 
+传统且常见的并行SCSI(Ultra320/160之类) 
+FiberChannel Transport Attributes 
+光纤通道 
+iSCSI Transport Attributes 
+iSCSI是利用TCP/IP网络传送SCSI命令和数据的I/O技术 
+SAS Transport Attributes 
+串行SCSI传输属性支持(SAS对于的关系SPI犹如SATA对于ATA) 
+SAS Domain Transport Attributes 
+为使用了SAS Domain的驱动程序提供帮助 
+Compile the SAS Domain Transport Attributes in debug mode 
+仅供调试使用 
+SCSI low-level drivers 
+底层SCSI驱动程序,按你实际使用的产品选择 
+iSCSI Initiator over TCP/IP 
+用于iSCSI在TCP/IP网络上传播的起动程序 
+{此处省略的部分按照自己实际使用的控制器进行选择,仅用一个例子解说子项} 
+Adaptec AIC79xx U320 support 
+以基于PCI-X的Adaptec Ultra 320 SCSI控制器为例解说子项 
+Maximum number of TCQ commands per device 
+每个SCSI设备的标记指令队列的最大长度(上限253).上限越高性能越好,但是对于SCSI设备较多的系统来说可能造成内存分配失败.此值还可以通过tag_info内核引导参数指定 
+Initial bus reset delay in milli-seconds 
+初始总线reset之后的延时微秒数(默认5000) 
+Enable Read Streaming for All Targets 
+对所有的标记队列启用Read Streaming(可以增强效能,但是在一些Adaptec早期的U320产品上有缺陷),此特性还可以通过rd_strm内核引导参数指定 
+Compile in Debugging Code 
+仅用于调试 
+Debug code enable mask (16383 for all debugging) 
+出错代码的掩码,0表示禁止所有,16383表示打开所有 
+Decode registers during diagnostics 
+将出错代码的解释内容编译进去,这样就不需要查看aic7xxx.reg中的出错代码表以确定出错代码的含意了 
+PCMCIA SCSI adapter support 
+通过PCMCIA卡与计算机连接的SCSI设备 
+Serial ATA and Parallel ATA drivers 
+SATA与PATA设备 
+ATA device support 
+SATA或PATA接口的硬盘或光驱等设备 
+AHCI SATA support 
+SATA高级主机控制器接口.要使用NCQ功能就必须选中它,另外BIOS中的SATA工作模式亦要选AHCI模式 
+Generic ATA support 
+基于新的ATA层的通用ATA控制器驱动,仅在你的芯片组在列表中找不到时才需要 
+{此处省略的部分按照自己主板上实际使用的芯片组进行选择} 
+Old CD-ROM drivers (not SCSI, not IDE) 
+老旧的CD-ROM驱动,这种CD-ROM既不使用SCSI接口,也不使用IDE接口 
+Multi-device support (RAID and LVM) 
+多设备支持(RAID和LVM).RAID和LVM的功能是使多个物理设备组建成一个单独的逻辑磁盘 
+RAID support 
+软件RAID(需要使用外部工具),若你有硬件RAID控制器,可以不选 
+Linear (append) mode 
+追加模式(简单的将一个分区追加在另一个分区之后) 
+RAID-0 (striping) mode 
+RAID-0(等量分割)模式 
+RAID-1 (mirroring) mode 
+RAID-1(镜像)模式 
+RAID-10 (mirrored striping) mode 
+RAID 0+1模式 
+RAID-4/RAID-5/RAID-6 mode 
+这些模式比较复杂,一般不用 
+Support adding drives to a raid-5 array 
+RAID-5阵列可以通过添加额外的驱动器进行扩展(restriping),这个选项允许在线进行这样的操作,同时要求mdadm的版本大于2.4.1 
+Multipath I/O support 
+多路IO支持是指在服务器和存储设备之间使用冗余的物理路径组件创建"逻辑路径",如果这些组件发生故障并造成路径失败,多路径逻辑将为I/O使用备用路径以使应用程序仍然可以访问其数据 
+Faulty test module for MD 
+用于MD(Multi-device)的缺陷测试模块 
+Device mapper support 
+Device-mapper是一个底层的卷管理器,不用LVM就别选了 
+Fusion MPT device support 
+Fusion MPT设备支持 
+IEEE 1394 (FireWire) support 
+IEEE 1394(火线) 
+I2O device support 
+I2O(智能IO)设备使用专门的I/O处理器负责中断处理/缓冲存取/数据传输等烦琐任务以减少CPU占用,一般的主板上没这种东西 
+Network device support 
+网络设备 
+Network device support 
+网络设备支持,当然要选啦 
+Intermediate Functional Block support 
+这是一个中间层驱动,可以用来灵活的配置资源共享,看不懂的可以不选 
+Dummy net driver support 
+哑接口网络,使用SLIP或PPP传输协议(如ADSL用户)的需要它 
+Bonding driver support 
+将多个以太网通道绑定为一个,也就是两块网卡具有相同的IP地址并且聚合成一个逻辑链路工作,可以用来实现负载均衡或硬件冗余 
+EQL (serial line load balancing) support 
+串行线路的负载均衡.如果有两个MODEM和两条电话线而且用SLIP或PPP协议,该选项可以让您同时使用这两个MODEM以达到双倍速度(在网络的另一端也要有同样的设备) 
+Universal TUN/TAP device driver support 
+TUN/TAP可以为用户空间提供包的接收和发送服务,比如可以用来虚拟一张网卡或点对点通道 
+General Instruments Surfboard 1000 
+SURFboard 1000插卡式Cable Medem(ISA接口),这玩意大概早就绝种了 
+ARCnet devices 
+一般人没有ARCnet类型的网卡 
+PHY device support 
+数据链路层芯片简称为MAC控制器,物理层芯片简称之为PHY,通常的网卡把MAC和PHY的功能做到了一颗芯片中,但也有一些仅含PHY的"软网卡" 
+Ethernet (10 or 100Mbit) 
+目前最广泛的10/100M网卡 
+Ethernet (1000 Mbit) 
+目前已成装机主流的1000M网卡 
+Ethernet (10000 Mbit) 
+万兆网卡无福消受啦 
+Token Ring devices 
+令牌环网设备 
+Wireless LAN (non-hamradio) 
+无线LAN 
+PCMCIA network device support 
+PCMCIA或CardBus网卡 
+Wan interfaces 
+WAN接口 
+ATM drivers 
+异步传输模式 
+FDDI driver support 
+光纤分布式数据接口 
+HIPPI driver support 
+HIPPI(高性能并行接口)是一个在短距离内高速传送大量数据的点对点协议 
+PLIP (parallel port) support 
+将并口映射成网络设备,这样两台机器即使没有网卡也可以使用并口通过并行线传输IP数据包 
+PPP (point-to-point protocol) support 
+点对点协议,PPP已经基本取代SLIP了,用ADSL的可要仔细选择了 
+PPP multilink support 
+多重链路协议(RFC1990)允许你将多个线路(物理的或逻辑的)组合为一个PPP连接一充分利用带宽,这不但需要pppd的支持,还需要ISP的支持 
+PPP filtering 
+允许对通过PPP接口的包进行过滤 
+PPP support for async serial ports 
+通过标准异步串口(COM1,COM2)使用PPP,比如使用老式的外置modem(非同步modem或ISDN modem)上网 
+PPP support for sync tty ports 
+通过同步tty设备(比如SyncLink适配器)使用PPP,常用于高速租用线路(比如T1/E1) 
+PPP Deflate compression 
+为PPP提供Deflate(等价于gzip压缩算法)压缩算法支持,需要通信双方的支持才有效 
+PPP BSD-Compress compression 
+为PPP提供BSD(等价于LZW压缩算法,没有gzip高效)压缩算法支持,需要通信双方的支持才有效 
+PPP MPPE compression (encryption) 
+为PPP提供MPPE加密协议支持,它被用于微软的P2P隧道协议中 
+PPP over Ethernet 
+这就是ADSL用户最常见的PPPoE啦,也就是在以太网上跑的PPP协议 
+PPP over ATM 
+在ATM上跑的PPP 
+SLIP (serial line) support 
+一个在串行线上(例如电话线)传输IP数据报的TCP/IP协议.小猫一族的通讯协议,与宽带用户无关 
+CSLIP compressed headers 
+CSLIP协议比SLIP快,它将TCP/IP头(而非数据)进行压缩传送,需要通信双方的支持才有效 
+Keepalive and linefill 
+让SLIP驱动支持RELCOM linefill和keepalive监视,这在信号质量比较差的模拟线路上是个好主意 
+Six bit SLIP encapsulation 
+这种线路非常罕见,不要选它 
+Fibre Channel driver support 
+光纤通道 
+Traffic Shaper 
+流量整形,已废弃 
+Network console logging support 
+通过网络记录内核信息 
+Netpoll support for trapping incoming packets 
+不知道Netpoll是什么的可以不选 
+Netpoll traffic trapping 
+不知道Netpoll是什么的可以不选 
+ISDN subsystem 
+综合业务数字网(Integrated Service Digital Network) 
+Telephony Support 
+VoIP支持 
+Input device support 
+输入设备 
+Generic input layer (needed for keyboard,mouse...) 
+通用输入层,要使用键盘鼠标的就必选 
+Support for memoryless force-feedback devices 
+游戏玩家使用的力反馈设备 
+Mouse interface 
+鼠标接口 
+Provide legacy /dev/psaux device 
+仍然支持作为传统的/dev/psaux设备 
+Horizontal screen resolution 
+数字化转换器或图形输入板的水平分辩率 
+Vertical screen resolution 
+数字化转换器或图形输入板的垂直分辨率 
+Joystick interface 
+游戏杆 
+Touchscreen interface 
+触摸屏 
+Event interface 
+能够利用/dev/input/eventX来存取输入设备的事件 
+Event debugging 
+该选项仅供调试 
+Keyboards 
+键盘驱动,一般选个AT键盘即可 
+Mouse 
+鼠标驱动,一般选个PS/2鼠标即可 
+Joysticks 
+游戏杆驱动 
+Touchscreens 
+触摸屏驱动 
+Miscellaneous devices 
+其他杂项驱动,一般选个PC喇叭即可 
+Hardware I/O ports 
+硬件I/O端口 
+Serial I/O support 
+使用PS/2键盘或鼠标的就必选 
+i8042 PC Keyboard controller 
+PS/2接口的键盘和鼠标 
+Serial port line discipline 
+串口键盘或鼠标 
+ct82c710 Aux port controller 
+一种德州仪器TravelMate笔记本上使用QuickPort接口的鼠标 
+Parallel port keyboard adapter 
+并口键盘或鼠标 
+PCI PS/2 keyboard and PS/2 mouse controller 
+接在移动式扩展坞(Docking station)上的键盘或鼠标 
+PS/2 driver library 
+为PS/2接口上的设备提供驱动(比如PS/2鼠标或标准AT键盘) 
+Raw access to serio ports 
+不是hacker就别选了 
+Gameport support 
+就是早年"小霸王"游戏机上的那种手柄 
+Character devices 
+字符设备 
+Virtual terminal 
+虚拟终端.除非是嵌入式系统,否则必选 
+Support for console on virtual terminal 
+内核将一个虚拟终端用作系统控制台(将诸如模块错误/内核错误/启动信息之类的警告信息发送到这里,通常是第一个虚拟终端).除非是嵌入式系统,否则必选 
+Support for binding and unbinding console drivers 
+虚拟终端是通过控制台驱动程序与物理终端相结合的,但在某些系统上可以使用多个控制台驱动程序(如framebuffer控制台驱动程序),该选项使得你可以选择其中之一 
+Non-standard serial port support 
+非标准串口支持.这样的设备早就绝种了 
+Serial drivers 
+串口驱动.如果你有老式的串口鼠标或小猫之类的就选吧 
+Unix98 PTY support 
+伪终端(PTY)可以模拟一个终端,它由slave(等价于一个物理终端)和master(被一个诸如xterms之类的进程用来读写slave设备)两部分组成的软设备.使用telnet或ssh远程登录者必选 
+Legacy (BSD) PTY support 
+使用过时的BSD风格的/dev/ptyxx作为master,/dev/ttyxx作为slave,这个方案有一些安全问题,建议不选 
+Parallel printer support 
+并口打印机 
+Support for console on line printer 
+允许将内核信息输出到并口,这样就可以打印出来 
+Support for user-space parallel port device drivers 
+/dev/parport设备支持,比如deviceid之类的程序需要使用它,大部分人可以关闭该选项 
+Texas Instruments parallel link cable support 
+德州仪器生产的一种使用并行电缆的图形计算器,如果你不知道这是什么设备就别选了 
+IPMI 
+可以利用IPMI远程监视服务器的物理特征(温度,电压,风扇,电源,机箱入侵),它是独立于CPU,BIOS,OS的,只要接通电源就可以实现对服务器的监控 
+IPMI top-level message handler 
+IPMI消息处理器,要启用IPMI远程监视这个就必选 
+Generate a panic event to all BMCs on a panic 
+当发生紧急情况(panic)时,IPMI消息处理器将会向每一个已注册的底板管理控制器(BMC)接口生成一个描述该panic的IPMI事件,这些事件可以引发日志记录/报警/重启/关机等动作 
+Generate OEM events containing the panic string 
+当发生紧急情况(panic)时,IPMI消息处理器将会产生OEM类型的事件 
+Device interface for IPMI 
+为IPMI消息处理器提供一个IOCTL接口已便用户空间的进程也可以使用IPMI 
+IPMI System Interface handler 
+向系统提供接口(KCS,SMIC),一般你用了IPMI就需要选上 
+IPMI Watchdog Timer 
+启用IPMI Watchdog定时器 
+IPMI Poweroff 
+允许IPMI消息处理器关闭机器 
+Watchdog Cards 
+能让系统在出现致命故障后自动重启,如果没有硬件Watchdog,建议使用Hangcheck timer而不是软件Watchdog 
+Watchdog Timer Support 
+选中它并选中下面的一个Driver之后,再创建一个/dev/watchdog节点即可拥有一只Watchdog了.更多信息请参考内核帮助 
+Disable watchdog shutdown on close 
+一旦Watchdog启动后就禁止将其停止 
+Software watchdog 
+软件Watchdog,使用它不需要有任何硬件的支持,但是可靠性没有硬件Watchdog高 
+{此处省略的硬件Watchdog部分请按照自己主板实际使用的芯片(可能在南桥中)进行选择} 
+Hardware Random Number Generator Core support 
+硬件随机数发生器核心支持 
+Intel HW Random Number Generator support 
+Intel芯片组的硬件随机数发生器 
+AMD HW Random Number Generator support 
+AMD芯片组的硬件随机数发生器 
+AMD Geode HW Random Number Generator support 
+AMD Geode LX的硬件随机数发生器 
+VIA HW Random Number Generator support 
+VIA芯片组的硬件随机数发生器 
+/dev/nvram support 
+直接存取主板上CMOS的接口,太危险了!建议别选 
+Enhanced Real Time Clock Support 
+启用该选项并创建/dev/rtc文件后就可以通过/proc/driver/rtc访问系统的硬件时钟(RTC),众多功能依赖于它(如SMP,IRQ共享,定时器),建议选择 
+Double Talk PC internal speech card support 
+由RC Systems公司制造的一种语音合成器 
+Siemens R3964 line discipline 
+与使用西门子R3964协议的设备同步通信,除非你有一些诸如PLC之类的特殊设备,否则别选 
+Applicom intelligent fieldbus card support 
+Applicom international公司生产的用于现场总线连接卡 
+Sony Vaio Programmable I/O Control Device support 
+Sony VAIO笔记本上的东西 
+Ftape, the floppy tape device driver 
+还使用磁带的就选吧 
+/dev/agpgart (AGP Support) 
+AGP总线支持,有AGP显卡的还必须从子项中选取符合自己显卡型号的驱动 
+Direct Rendering Manager 
+DRI允许应用程序以高效安全的方式直接访问图形处理,主要用于硬件3D加速.桌面用户建议选择,同时还必须从子项中选取符合自己显卡型号的驱动 
+PCMCIA character devices 
+使用PCMCIA接口的字符设备,如果你有这种设备就到子项中去选吧 
+ACP Modem (Mwave) support 
+IBM Thinkpad上的一种软猫,古董产品 
+NatSemi SCx200 GPIO Support 
+松下的一种通用输入输出(GPIO)芯片,常用于嵌入式系统 
+NatSemi PC8736x GPIO Support 
+松下的一种通用输入输出(GPIO)芯片,常用于嵌入式系统 
+NatSemi Base GPIO Support 
+松下的一种通用输入输出(GPIO)芯片,常用于嵌入式系统 
+AMD CS5535/CS5536 GPIO 
+常用于AMD Geode的一种通用输入输出(GPIO)芯片,常用于嵌入式系统 
+RAW driver (/dev/raw/rawN) 
+已废弃 
+HPET - High Precision Event Timer 
+高精度事件定时器 
+Allow mmap of HPET 
+允许对HPET寄存器进行映射,建议选中 
+Hangcheck timer 
+宕机检测定时器周期性地检查系统任务调度程序以确定系统的运行状况,如果超过阈值,计算机将重新启动.它通常可以比Watchdog更好地解决可用性和可靠性问题 
+TPM devices 
+基于硬件的"可信赖平台模块",与数字霸权管理是一路货,全不选 
+Telecom clock driver for MPBL0010 ATCA SBC 
+没见过这种硬件,不选 
+I2C support 
+I2C是Philips极力推动的微控制应用中使用的低速串行总线协议,可用于监控电压/风扇转速/温度等.SMBus(系统管理总线)是I2C的子集.除硬件传感器外"Video For Linux"也需要该模块的支持 
+I2C device interface 
+I2C设备接口,允许用户空间的程序通过/dev/i2c-*设备文件使用I2C总线 
+I2C Algorithms 
+I2C算法,可以全不选,若有其他部分依赖其子项时,会自动选上 
+I2C Hardware Bus support 
+按实际硬件情况选对应的子项即可 
+Miscellaneous I2C Chip support 
+其他不常见的产品,按需选择 
+I2C Core debugging messages 
+仅供调试 
+I2C Algorithm debugging messages 
+仅供调试 
+I2C Bus debugging messages 
+仅供调试 
+I2C Chip debugging messages 
+仅供调试 
+SPI support 
+串行外围接口(SPI)常用于微控制器(MCU)与外围设备(传感器,eeprom,flash,编码器,模数转换器)之间的通信,比如MMC和SD卡就通常需要使用SPI 
+Dallas's 1-wire bus 
+一线总线 
+Hardware Monitoring support 
+当前主板大多都有一个监控硬件健康的设备用于监视温度/电压/风扇转速等,请按照自己主板实际使用的芯片选择相应的子项.另外,该功能还需要I2C的支持 
+Multimedia devices 
+多媒体设备 
+Video For Linux 
+要使用音频/视频设备或FM收音卡的就必选,此功能还需要I2C的支持 
+Enable Video For Linux API 1 
+使用老旧的V4L第一版API,反对使用 
+Enable Video For Linux API 1 compatible Layer 
+提供对第一版V4L的兼容,建议不选 
+Video Capture Adapters 
+视频捕获卡 
+Enable advanced debug functionality 
+该选项仅供调试 
+Autoselect pertinent encoders/decoders and other helper chips 
+为视频卡自动选择所需的编码和解码模块,建议选择 
+Virtual Video Driver 
+虚拟视频卡,仅供测试视频程序和调试 
+SAA5246A, SAA5281 Teletext processor 
+该选项仅对欧洲用户有意义,中国用户不需要 
+SAA5249 Teletext processor 
+该选项仅对欧洲用户有意义,中国用户不需要 
+{此处省略的硬件请按照自己实际使用的芯片进行选择} 
+V4L USB devices 
+使用USB接口的视频卡,子项请按照自己实际使用的视频卡选择 
+Radio Adapters 
+音频卡,子项请按照自己实际使用的音频卡选择 
+Digital Video Broadcasting Devices 
+数字视频广播设备(DVB卡或机顶盒),子项请按自己实际使用的硬件选择 
+DABUSB driver 
+USB接口的数字音频广播设备接收器 
+Graphics support 
+图形设备/显卡支持 
+Enable firmware EDID 
+允许访问Video BIOS中的扩展显示器识别数据(EDID),使用Matrox显卡的建议关闭,建议桌面用户选择 
+Support for frame buffer devices 
+帧缓冲设备是为了让应用程序使用统一的接口操作显示设备而对硬件进行的抽象,建议桌面用户选择 
+Enable Video Mode Handling Helpers 
+使用GTF和EDID来帮助处理显示模式,可以不选,若有其他选项依赖于它时,会自动选上 
+Enable Tile Blitting Support 
+可以不选,若有其他选项依赖于它时,会自动选上 
+VGA 16-color graphics support 
+16色VGA显卡.如果你有这种古董就选吧 
+VESA VGA graphics support 
+符合VESA 2.0标准的显卡的通用驱动,如果显卡芯片在下面能够找到就可以不选 
+{此处省略的硬件请按照自己实际使用的显卡芯片进行选择} 
+Virtual Frame Buffer support 
+仅供调试使用 
+Console display driver support 
+控制台显示驱动 
+VGA text console 
+文本控制台,必选 
+Enable Scrollback Buffer in System RAM 
+在内存中开辟额外的屏幕缓冲区,这将允许你回滚屏幕 
+Scrollback Buffer Size (in KB) 
+在内存中开辟的额外屏幕缓冲区大小 
+Video mode selection support 
+允许在内核启动时使用"vga="选择文本模式,如果你希望一行能够显示更多字符的话可以打开它 
+MDA text console (dual-headed) 
+如果你有古董级别的单色显卡并且作为第二块显卡使用以实现双头显示就选上吧 
+Framebuffer Console support 
+基于framebuffer的控制台驱动,服务器可以不选 
+Framebuffer Console Rotation 
+显示画面旋转,它可能大大降低显示速度,建议不选 
+Select compiled-in fonts 
+选择内建字体 
+VGA 8x8 font 
+高分辨率下的小字体 
+VGA 8x16 font 
+底分辨率下的大字体 
+{其它字体省略} 
+Logo configuration 
+启动时显示linux的logo(一幅企鹅图像),喜欢炫一下的就选吧 
+Backlight & LCD device support 
+LCD显示器支持,一般无需选择 
+Sound 
+声卡 
+Advanced Linux Sound Architecture 
+使用声卡者必选 
+Sequencer support 
+音序器支持(MIDI必需),除非你确定不需要,否则请选上 
+Sequencer dummy client 
+除非你要同时连接到多个MIDI设备或应用程序,否则请不要选择 
+OSS Mixer API 
+OSS混音器API仿真,许多程序目前仍然需要使用它,建议选择 
+OSS PCM (digital audio) API 
+OSS数字录音(PCM)API模拟,许多程序目前仍然需要使用它,建议选择 
+OSS PCM (digital audio) API - Include plugin system 
+建议不选 
+OSS Sequencer API 
+OSS音序器支持,许多程序目前仍然需要使用它,建议选择 
+RTC Timer support 
+为ALSA启用RTC定时器支持,建议选择 
+Use RTC as default sequencer timer 
+将RTC当作默认的时序脉冲发生器 
+Dynamic device file minor numbers 
+仅供拥有多个声卡的用户选择 
+Support old ALSA API 
+支持已被废弃的老版本ALSA API 
+Verbose procfs contents 
+仅供调试使用 
+Verbose printk 
+仅供调试使用 
+Debug 
+仅供调试使用 
+Generic devices 
+通用设备 
+Dummy (/dev/null) soundcard 
+仅供调试 
+Virtual MIDI soundcard 
+虚拟MIDI驱动,允许将使用原始MIDI设备的应用程序连接到音序器客户端,如果你不知道MIDI是什么就别选 
+{此处省略的硬件请按照自己实际使用的声卡芯片进行选择} 
+PCI devices 
+PCI接口的声卡,请按实际使用的声卡选择子项 
+USB devices 
+USB接口的声卡,请按实际使用的声卡选择子项 
+PCMCIA devices 
+PCMCIA接口的声卡,请按实际使用的声卡选择子项 
+Open Sound System 
+反对使用 
+USB support 
+USB支持 
+Support for Host-side USB 
+主 机端(Host-side)USB支持.通用串行总线(USB)是一个串行总线子系统规范,它比传统的串口速度更快并且特性更丰富(供电,热插拔,最多可 接127个设备等),有望在将来一统PC外设接口.USB的"Host"(主机)被称为"根"(也可以理解为是主板上的USB控制器),外部设备被称为" 叶子",而内部的节点则称为"hub"(集线器).基本上只要你想使用任何USB设备都必须选中此项.另外,你还需要从下面选中至少一个"Host Controller Driver"(HCD),比如适用于USB1.1的"UHCI HCD support"或"OHCI HCD support",适用于USB2.0的"EHCI HCD (USB 2.0) support".如果你拿不准的话把他们全部选中一般也不会出问题.如果你的系统有设备端的USB接口(也就是你的系统可以作为"叶子"使用),请到 "USB Gadget"中进行选择. 
+USB verbose debug messages 
+仅供调试使用 
+USB device filesystem 
+在/proc/bus/usb里列出当前连接的usb设备(mount -t usbfs none /proc/bus/usb),这样用户空间的程序就可以直接访问这些USB设备,基本上你要使用USB设备的话就必须选中此项 
+Enforce USB bandwidth allocation 
+执行usb带宽分配限制,禁止打开占用usb总线带宽超过90%的设备,关闭该选项可能会导致某些设备无法正常工作 
+Dynamic USB minor allocation 
+除非你有超过16个同类型的USB设备,否则不要选择 
+USB selective suspend/resume and wakeup 
+usb设备的挂起和恢复,毛病多多且许多设备尚未支持它,建议不选 
+EHCI HCD (USB 2.0) support 
+USB 2.0支持(大多数2002年以后的主板都支持).如果你选中了此项,一般来说你还需要选中OHCI或UHCI驱动 
+Full speed ISO transactions 
+由 于USB 2.0支持低速(1.5Mbps)/全速(12Mbps)/高速(480Mbps)三种规格的外部设备,为了将全/低速设备对高速设备可用带宽的影响减到 最小,在USB2.0集线器中提供了一种事务转换(Transaction Translator)机制,该机制支持在Hub连接的是全/低速设备的情况下,允许主控制器与Hub之间以高速传输所有设备的数据,从而节省不必要的等 待.如果你没有外置的USB集线器就无需选择 
+Root Hub Transaction Translators 
+带 有USB 2.0接口的主板上都有一个"根集线器"(Root Hub)以允许在无需额外购买hub的情况下就可以提供多个USB插口,其中的某些产品还在其中集成了事务转换(Transaction Translator)功能,这样就不需要再额外使用一个兼容OHCI或UHCI的控制器来兼容USB 1.1,即使你不太清楚自己主板上的根集线器是否集成了事务转换功能也可以安全的选中此项 
+Improved Transaction Translator scheduling 
+如果你有一个高速USB 2.0 hub并且某些接在这个hub上的低速或全速设备不能正常工作(显示'cannot submit datapipe: error -28'或'error -71'错误),可以考虑选上 
+ISP116X HCD support 
+ISP1160/ISP1161主机USB控制器,是符合USB2.0全速规范的单片主机控制器和设备控制器,支持OHCI标准 
+OHCI HCD support 
+开放主机控制接口(OHCI)是主要针对嵌入式系统的USB 1.1主机控制器规范 
+UHCI HCD (most Intel and VIA) support 
+通用主机控制器接口(UHCI)是主要针对PC机的USB 1.1主机控制器规范.另外,EHCI也可能需要它 
+Elan U132 Adapter Host Controller 
+如果你有这种硬件就选吧 
+SL811HS HCD support 
+如果你有这种硬件就选吧 
+USB Bluetooth TTY support 
+USB蓝牙TTY设备支持 
+USB MIDI support 
+USB MIDI设备支持 
+USB Modem (CDC ACM) support 
+USB接口的猫或ISDN适配器 
+USB Printer support 
+USB打印机 
+USB Mass Storage support 
+USB 存储设备(U盘,USB硬盘,USB软盘,USB CD-ROM,USB磁带,memory sticks,数码相机,读卡器等等).该选项依赖于'SCSI device support',且大部分情况下还依赖于'SCSI disk support'(比如U盘或USB硬盘) 
+USB Mass Storage verbose debug 
+仅供调试使用 
+{省略的部分请按照自己实际使用的硬件选择(事实上大部分人都没有这些设备,可以全不选)} 
+The shared table of common (or usual) storage devices 
+该模块包含一张记录了常用USB存储设备及其驱动的表格,这样你无需重新编译模块即可在切换这些设备时自动邦定对应的驱动(还需要对/etc/modprobe.conf进行相应的设置).不确定的建议不选 
+USB Human Interface Device (full HID) support 
+USB人机界面设备(鼠标/键盘/游戏杆/手写版等人操作计算机的设备),该驱动不能和"USB HID Boot Protocol drivers"同时使用 
+HID input layer support 
+如果你有USB接口的鼠标/键盘/游戏杆/手写板等输入设备就必选 
+Enable support for iBook/PowerBook special keys 
+苹果iBooks/PowerBooks键盘上的Fn/Numlock等功能键支持 
+Force feedback support 
+力反馈设备 
+/dev/hiddev raw HID device support 
+如果你有USB监控装置或不间断电源(UPS)之类的非输入设备就选上 
+USB HID Boot Protocol drivers 
+如果你有绝对的把握确信不为自己的键盘和鼠标使用通常的HID驱动,而要使用Boot Protocol模式的HID驱动(常见于嵌入式环境)就选吧 
+Aiptek 6000U/8000U tablet support 
+一种手写板 
+Wacom Intuos/Graphire tablet support 
+一种手写/绘图板 
+Acecad Flair tablet support 
+一种数控绘图板 
+KB Gear JamStudio tablet support 
+一种手写/绘图板 
+Griffin PowerMate and Contour Jog support 
+一种具有调节音量/滚动文本/视频快进快退等功能的产品 
+USB Touchscreen Driver 
+USB触摸屏驱动 
+Yealink usb-p1k voip phone 
+一种VoIP电话 
+X-Box gamepad support 
+X-Box游戏板 
+ATI / X10 USB RF remote control 
+一种usb远程控制设备 
+ATI / Philips USB RF remote control 
+一种usb远程控制设备 
+Keyspan DMR USB remote control 
+一种usb远程控制设备 
+Apple USB Touchpad support 
+苹果机上的触摸板 
+USB Mustek MDC800 Digital Camera support 
+一种数码相机 
+Microtek X6USB scanner support 
+一种扫描仪 
+USB Network Adapters 
+USB网络适配器,如果你有这种设备请按自己实际使用的硬件选择子项 
+USB Monitor 
+usb流量监控,一般没必要选它 
+USS720 parport driver 
+一种USB接口转并口的转换设备 
+USB Serial Converter support 
+USB接口转串口的转换设备 
+EMI 6|2m USB Audio interface support 
+一种USB音频设备 
+EMI 2|6 USB Audio interface support 
+一种USB音频设备 
+ADU devices from Ontrak Control Systems 
+Ontrak Control Systems公司的一种自动拨号设备 
+USB Auerswald ISDN support 
+一种ISDN设备 
+USB Diamond Rio500 support 
+一种mp3播放机 
+USB Lego Infrared Tower support 
+一种无线发射机 
+USB LCD driver support 
+USB液晶显示器 
+USB LED driver support 
+USB发光二极管 
+Cypress CY7C63xxx USB driver support 
+德国AK Modul-Bus Computer GmbH公司的一种产品,不知道是用来干什么的 
+Cypress USB thermometer driver support 
+一种温度计?? 
+USB Phidgets drivers 
+来自Phidgets公司的各种USB产品 
+Siemens ID USB Mouse Fingerprint sensor support 
+西门子公司的一种指纹传感器 
+Elan PCMCIA CardBus Adapter USB Client 
+Elan公司的一种USB转PCMCIA的适配器 
+Apple Cinema Display support 
+苹果公司的一种Cinema Display 
+USB 2.0 SVGA dongle support (Net2280/SiS315) 
+一种软件狗 
+USB LD driver 
+USB LD驱动 
+PlayStation 2 Trance Vibrator driver support 
+SONY的PS2上面的"入迷振荡器"(类似于力反馈手柄) 
+USB testing driver 
+测试中的驱动,别选 
+USB DSL modem support 
+USB DSL猫 
+USB Gadget Support 
+其他各种杂七杂八的usb小玩艺 
+MMC/SD Card support 
+MMC/SD卡支持 
+LED devices 
+发光二级管(LED)设备 
+InfiniBand support 
+InfiniBand是一个通用的高性能I/O规范,它使得存储区域网中以更低的延时传输I/O消息和集群通讯消息并且提供很好的伸缩性.用于Linux服务器集群系统 
+EDAC - error detection and reporting (RAS) 
+错误检测与纠正(EDAC)的目标是发现并报告甚至纠正在计算机系统中发生的错误,这些错误是由CPU或芯片组报告的底层错误(内存错误/缓存错误/PCI错误/温度过高,等等),建议选择.如果这些代码报告了一个错误,请到http://bluesmoke.sourceforge.net/和http://buttersideup.com/edacwiki查看更多信息 
+Debugging 
+仅供调试使用 
+Main Memory EDAC (Error Detection And Correction) reporting 
+一些系统能够检测和修正主内存中的错误,EDAC能够报告这些信息(EDAC自己检测到的或者根据ECC得到的).EDAC还会尽量检测这些错误发生在哪里以便于替换损坏的内存.建议选择并按照你实际使用的芯片组选取子项 
+Error detecting method 
+错误检测方法,当前只有一个"Poll for errors"(错误轮询)可用 
+Real Time Clock 
+所有的PC机主板都包含一个电池动力的实时时钟芯片,以便在断电后仍然能够继续保持时间,RTC通常与CMOS集成在一起,因此BIOS可以从中读取当前时间 
+RTC class 
+通用RTC类支持,选中此项后你就可以在操作系统中使用一个或多个RTC设备(你还必须从下面启用一个或多个RTC接口) 
+Set system time from RTC on startup 
+系统启动时使用从指定的RTC设备中读取的时间来设定系统时间,通常这将有助于避免不必要的文件系统检测程序(fsck)的运行,建议选择 
+The RTC to read the time from 
+指定具体从哪个RTC设备中读取时间 
+RTC debug support 
+仅供调试使用 
+sysfs 
+允许通过sysfs接口使用RTC,允许多个RTC设备,也就是/sys/class/rtc/rtc0~N 
+proc 
+允许通过proc接口使用RTC,仅允许一个RTC设备,也就是/proc/driver/rtc 
+dev 
+允许通过dev接口使用RTC,允许多个RTC设备,也就是"udev"设置的/dev/rtc0~N,建议你建立一个指向其中之一的软连接/dev/rtc,某些程序(比如hwclock)需要使用/dev/rtc 
+RTC UIE emulation on dev interface 
+如果底层rtc芯片驱动没有提供RTC_UIE就仿真一个RTC_UIE.那些请求将产生每秒一次的更新请求以用来同步[这个选项的意思我也搞不清楚究竟时啥意思,翻译的也可能有误] 
+{此处省略的RTC驱动请按照自己实际使用的RTC芯片进行选择} 
+DMA Engine support 
+从Intel Bensley双核服务器平台开始引入的数据移动加速(Data Movement Acceleration)引擎,它将某些传输数据的操作从CPU转移到专用硬件,从而可以进行异步传输并减轻CPU负载.Intel已将此项技术变为开 放的标准,将来应当会有更多的厂商支持 
+Network: TCP receive copy offload 
+通过在网络栈中利用DMA引擎来减少接收数据包时的copy-to-user操作以释放CPU资源,这是DMA引擎目前最主要的用途 
+Intel I/OAT DMA support 
+Intel I/O加速技术(Intel I/O Acceleration Technology)中的DMA支持,基于Intel Bensley的新一代服务器平台都支持它 
+File systems
+文件系统
+强烈建议在选择之前先看看各种文件系统的比较
+Second extended fs support 
+Ext2文件系统是Linux的标准文件系统,擅长处理稀疏文件 
+Ext2 extended attributes 
+Ext2文件系统扩展属性(与inode关联的name:value对)支持 
+Ext2 POSIX Access Control Lists 
+POSIX ACL(访问控制列表)支持,可以更精细的针对每个用户进行访问控制,需要外部库和程序的支持 
+Ext2 Security Labels 
+安全标签允许选择使用不同的安全模型实现(如SELinux)的访问控制模型,如果你没有使用需要扩展属性的安全模型就别选 
+Ext2 execute in place support 
+程序在写入存储介质时就已经分配好运行时的地址,因此不需要载入内存即可在芯片内执行,一般仅在嵌入式系统上才有这种设备 
+Ext3 journalling file system support 
+Ext3性能平庸,使用journal日志模式时数据完整性非常好(但怪异的是此时多线程并发读写速度却最快) 
+Ext3 extended attributes 
+Ext3文件系统扩展属性(与inode关联的name:value对)支持 
+Ext3 POSIX Access Control Lists 
+POSIX ACL(访问控制列表)支持,可以更精细的针对每个用户进行访问控制,需要外部库和程序的支持 
+Ext3 Security Labels 
+安全标签允许选择使用不同的安全模型实现(如SELinux)的访问控制模型,如果你没有使用需要扩展属性的安全模型就别选 
+Ext4dev/ext4 extended fs support 
+尚处于开发状态的Ext4 
+JBD (ext3) debugging support 
+仅供开发者使用 
+JBD2 (ext4dev/ext4) debugging support 
+仅供开发者使用 
+Reiserfs support 
+性 能几乎全面超越Ext2(处理稀疏文件比Ext2慢),小文件(小于4k)性能非常突出,创建和删除文件速度最快,处理大量目录和文件(5k-20k)时 仍然非常迅速.日志模式建议使用Ordered,追求极速可使用Writeback模式,追求安全可使用Journal模式.建议使用noatime, notail选项挂载分区以提高速度和避免bug.用于NFS和磁盘限额时需要额外的补丁 
+Enable reiserfs debug mode 
+启用ReiserFS调试模式,仅供开发者使用 
+Stats in /proc/fs/reiserfs 
+在/proc/fs/reiserfs文件中显示Reiserfs文件系统的状态,仅供开发者使用 
+ReiserFS extended attributes 
+ReiserFS文件系统扩展属性(与inode关联的name:value对)支持 
+ReiserFS POSIX Access Control Lists 
+POSIX ACL(访问控制列表)支持,可以更精细的针对每个用户进行访问控制,需要外部库和程序的支持 
+ReiserFS Security Labels 
+安全标签允许选择使用不同的安全模型实现(如SELinux)的访问控制模型,如果你没有使用需要扩展属性的安全模型就别选了 
+JFS filesystem support 
+IBM的JFS文件系统 
+XFS filesystem support 
+碎片最少,多线程并发读写最佳,大文件(>64k)性能最佳,创建和删除文件速度较慢.由于XFS在内存中缓存尽可能多的数据且仅当内存不足时才会将数据刷到磁盘,所以应当仅在确保电力供应不会中断的情况下才使用XFS 
+Quota support 
+XFS的磁盘配额支持 
+Security Label support 
+扩展的安全标签支持.SElinux之类的安全系统会使用到这样的扩展安全属性 
+POSIX ACL support 
+POSIX ACL(访问控制列表)支持,可以更精细的针对每个用户进行访问控制,需要外部库和程序的支持 
+Realtime support 
+实时子卷是专门存储文件数据的卷,可以允许将日志与数据分开在不同的磁盘上 
+GFS2 file system support 
+一种用于集群的文件系统 
+OCFS2 file system support 
+一种用于集群的文件系统 
+Minix fs support 
+老古董文件系统 
+ROM file system support 
+用于嵌入式系统的内存文件系统的支持 
+Inotify file change notification support 
+新式的文件系统的变化通知机制,简洁而强大,用于代替老旧的Dnotify 
+Inotify support for userspace 
+用户空间的Inotify支持 
+Quota support 
+磁盘配额支持,限制某个用户或者某组用户的磁盘占用空间,Ext2/Ext3/Reiserfs都支持它 
+Old quota format support 
+老式的配额格式支持 
+Quota format v2 support 
+新的v2格式允许使用32位的UID/GID 
+Dnotify support 
+旧式的基于目录的文件变化的通知机制(新机制是Inotify),目前仍然有一些程序依赖它 
+Kernel automounter support 
+内核自动加载远程文件系统(v3,就算选也不选这个旧的) 
+Kernel automounter version 4 support (also supports v3) 
+新的(v4)的内核自动加载远程文件系统的支持,也支持v3 
+Filesystem in Userspace support 
+FUSE允许在用户空间实现一个文件系统,如果你打算开发一个自己的文件系统或者使用一个基于FUSE的文件系统就选吧 
+CD-ROM/DVD Filesystems 
+CD-ROM/DVD文件系统 
+ISO 9660 CDROM file system support 
+CD-ROM的标准文件系统 
+Microsoft Joliet CDROM extensions 
+Microsoft对ISO 9660文件系统的Joliet扩展,允许在文件名中使用Unicode字符,也允许长文件名 
+Transparent decompression extension 
+Linux对ISO 9660文件系统的扩展,允许将数据透明的压缩存储在CD上 
+UDF file system support 
+某些新式CD/DVD上的文件系统,很少见 
+DOS/FAT/NT Filesystems 
+DOS/Windows的文件系统 
+MSDOS fs support 
+古老的MSDOS文件系统 
+VFAT (Windows-95) fs support 
+从Win95开始使用的VFAT文件系统 
+Default codepage for FAT 
+默认代码页 
+Default iocharset for FAT 
+默认字符集 
+NTFS file system support 
+从WinNT开始使用的NTFS文件系统 
+NTFS debugging support 
+仅供调试使用 
+NTFS write support 
+NTFS写入支持 
+Pseudo filesystems 
+伪文件系统 
+/proc file system support 
+显示系统状态的虚拟文件系统(irq设置,内存使用,加载的设备驱动器,网络状态等),许多程序依赖于它 
+/proc/kcore support 
+系统物理内存的映象 
+/proc/vmcore support 
+以ELF格式转储的已崩溃内核镜像,仅供调试使用 
+Sysctl support (/proc/sys) 
+显示各种不同的内核参数,并让root用户能交互地更改其中的某些内容 
+sysfs file system support 
+导出内核内部对象及其属性和对象之间的相互关系的文件系统,它把连接在系统上的设备和总线以及驱动程序等组织成为一个分级的文件,内核启动时依靠它挂载根分区,禁用sysfs后必须在内核引导参数中使用设备号指定根分区 
+Virtual memory file system support (former shm fs) 
+tmpfs文件系统(以前叫shm[共享内存]文件系统)支持 
+Tmpfs POSIX Access Control Lists 
+POSIX ACL(访问控制列表)支持,可以更精细的针对每个用户进行访问控制,需要外部库和程序的支持 
+HugeTLB file system support 
+仅仅能够在某些罕见的体系结构上使用的文件系统 
+Userspace-driven configuration filesystem 
+configfs是用户空间驱动的文件系统,提供与sysfs相反的功能 
+Miscellaneous filesystems 
+非主流的杂项文件系统 
+Network File Systems 
+网络文件系统 
+Partition Types 
+高级磁盘分区类型,不确定可以全不选 
+Native Language Support 
+本地语言支持 
+Base native language support 
+基础本地语言,必选 
+Default NLS Option 
+默认本地语言,建议使用UTF-8 
+{此处省略的部分请按需选择,一般至少需要CP437,ASCII,ISO-8859-1} 
+Distributed Lock Manager 
+通用的分布式锁管理器,不明白就不选 
+Instrumentation Support
+分析支持
+Profiling support 
+对系统的活动进行分析,仅供内核开发者使用 
+Kprobes 
+仅供内核开发者使用 
+Kernel hacking
+内核hack选项
+Show timing information on printks 
+在printk的输出中包含时间信息,可以用来分析内核启动过程各步骤所用时间 
+Enable __must_check logic 
+在编译内核的过程中使用"必须检查"的逻辑,禁用它将不会显示某些警告信息 
+Magic SysRq key 
+不懂的千万别选 
+Enable unused/obsolete exported symbols 
+导出无用和废弃的符号,这将使内核不必要的增大 
+Kernel debugging 
+不是内核开发者的别选 
+Debug Filesystem 
+不是内核开发者的别选 
+Compile the kernel with frame unwind information 
+不是内核开发者的别选 
+Run 'make headers_check' when building vmlinux 
+在编译内核时运行'make headers_check'命令检查内核头文件,当你修改了与用户空间相关的内核头文件后建议启用该选项 
+Linux Kernel Dump Test Tool Module 
+不是内核开发者的别选 
+Enable doublefault exception handler 
+允许捕获非常罕见的导致系统无警告重启的doublefault异常,对于调试非常重要 
+Security options
+安全选项
+这里的选项不明白的建议不要选,否则有可能弄巧成拙.
+Enable access key retention support 
+在内核中保留authentication token和access key 
+Enable the /proc/keys file by which keys may be viewed 
+允许有权限的进程通过/proc/keys读取所有的key 
+Enable different security models 
+允许内核选择不同的安全模型,如果未选中则内核将使用默认的安全模型 
+Socket and Networking Security Hooks 
+允许安全模型通过Security Hook对Socket与Networking进行访问控制 
+XFRM (IPSec) Networking Security Hooks 
+启用XFRM安全Hook 
+Default Linux Capabilities 
+启用与"默认"Linux的兼容性 
+Root Plug Support 
+一个简单的Linux安全模块,在特定的USB设备不存在时它简单的禁止一切egid==0的进程运行 
+NSA SELinux Support 
+美国国家安全局(NSA)开发的安全增强Linux(SELinux),你还需要进行策略配置(checkpolicy)并且对文件系统进行标记(setfiles) 
+NSA SELinux boot parameter 
+添加一个内核引导参数以允许在引导时使用'selinux=0'禁用SELinux或'selinux=1'启用SELinux 
+NSA SELinux boot parameter default value 
+上述参数的默认值 
+NSA SELinux runtime disable 
+允许在运行时禁用SELinux 
+NSA SELinux Development Support 
+SELinux开发支持 
+NSA SELinux AVC Statistics 
+搜集存取向量(access vector)缓冲区的统计信息并在/selinux/avc/cache_stats中显示出来.这些信息可以用avcstat之类的工具查看 
+NSA SELinux checkreqprot default value 
+checkreqprot标志的默认值 
+NSA SELinux enable new secmark network controls by default 
+默认启用新的基于安全标记(secmark)的网络 
+NSA SELinux maximum supported policy format version 
+允许将支持的最高策略格式版本设置为一个特定的数值 
+NSA SELinux maximum supported policy format version value 
+支持的最高策略格式版本的数值 
+Cryptographic options
+加密选项
+Cryptographic API 
+提供核心的加密API支持.这里的加密算法被广泛的应用于驱动程序通信协议等机制中.子选项可以全不选,内核中若有其他部分依赖它,会自动选上 
+Cryptographic algorithm manager 
+创建加密模版实例,必须要选 
+HMAC support 
+为IPSec所必须,可为PPPoE提供压缩支持 
+Null algorithms 
+NULL加密算法(什么也不做),用于IPsec协议的封装安全载荷模块(ESP) 
+MD4 digest algorithm 
+老旧的摘要算法,已经过时 
+MD5 digest algorithm 
+主流摘要算法,128位(已被中国山东大学王小云攻破,可以快速找到碰撞) 
+SHA1 digest algorithm 
+主流摘要算法,160位(已被中国山东大学王小云攻破,可以快速找到碰撞),速度与MD5相当 
+SHA256 digest algorithm 
+更好的摘要算法,256位,速度较SHA1稍慢 
+SHA384 and SHA512 digest algorithms 
+更好的摘要算法,384/512位,速度大约只有SHA1的40-50% 
+Whirlpool digest algorithms 
+最安全的摘要算法,512位,已被列入ISO标准,目前最新版本为3.0(2003年发布) 
+Tiger digest algorithms 
+号称最快的摘要算法,192位,专门为64位CPU进行了优化 
+ECB support 
+电子密码本,最简单的加密方法 
+CBC support 
+密码块链,IPSec需要使用它 
+DES and Triple DES EDE cipher algorithms 
+老迈的(DES)和尚佳的(Triple DES)对称加密算法 
+Blowfish cipher algorithm 
+又老又慢的对称加密算法 
+Twofish cipher algorithm 
+很强的对称加密算法,使用较广 
+Twofish cipher algorithms (i586) 
+很强的对称加密算法,使用较广(针对i586的版本) 
+Serpent cipher algorithm 
+很强的对称加密算法 
+AES cipher algorithms 
+最佳的对称加密算法(Rijndael),128/192/256位,强度最高,快速且节省内存 
+AES cipher algorithms (i586) 
+最佳的对称加密算法(Rijndael),128/192/256位,强度最高,快速且节省内存(针对i586的版本) 
+CAST5 (CAST-128) cipher algorithm 
+对称加密算法 
+CAST6 (CAST-256) cipher algorithm 
+对称加密算法 
+TEA, XTEA and XETA cipher algorithms 
+较弱的对称加密算法 
+ARC4 cipher algorithm 
+脆弱的流对称加密算法 
+Khazad cipher algorithm 
+对称加密算法 
+Anubis cipher algorithm 
+对称加密算法 
+Deflate compression algorithm 
+压缩算法,当在IPSec中使用IPCOMP协议时才需要 
+Michael MIC keyed digest algorithm 
+摘要算法,仅仅用于校验iSCSI设备传输的数据,因为算法本身比较脆弱 
+CRC32c CRC algorithm 
+摘要算法,可用于校验iSCSI设备传输的数据 
+Testing module 
+快速且丑陋的测试模块 
+Hardware crypto devices 
+仅有VIA C7系列处理器支持硬件加密(VIA PadLock高级加密引擎) 
+Library routines
+库子程序
+仅有那些不包含在内核原码中的第三方内核模块才可能需要,可以全不选,内核中若有其他部分依赖它,会自动选上
+CRC-CCITT functions 
+传送8-bit字符,欧洲标准 
+CRC16 functions 
+传送8-bit字符,美国标准 
+CRC32 functions 
+用于点对点的同步数据传输中,传输网络数据包所必须的 
+CRC32c (Castagnoli, et al) Cyclic Redundancy-Check 
+用于点对点的同步数据传输中,比如iSCSI设备 
+
+
